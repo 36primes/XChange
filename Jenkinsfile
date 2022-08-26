@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Maven Build') {
             steps {
-                sh 'mvn clean install'
+                sh 'mvn clean install -DskipTests=true'
             }
         }
         stage('Git Tag') {
