@@ -472,7 +472,7 @@ public abstract class Order implements Serializable {
     }
   }
 
-//  @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.WRAPPER_OBJECT)
+  @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.WRAPPER_OBJECT)
   public interface IOrderFlags {}
 
   public abstract static class Builder {

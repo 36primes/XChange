@@ -19,7 +19,7 @@ public final class BinanceOrder {
   public final BigDecimal executedQty;
   public final BigDecimal cummulativeQuoteQty;
   public final OrderStatus status;
-  public final TimeInForce timeInForce;
+  public final String timeInForce;
   public final OrderType type;
   public final OrderSide side;
   public final BigDecimal stopPrice;
@@ -35,7 +35,7 @@ public final class BinanceOrder {
           @JsonProperty("executedQty") BigDecimal executedQty,
           @JsonProperty("cummulativeQuoteQty") BigDecimal cummulativeQuoteQty,
           @JsonProperty("status") OrderStatus status,
-          @JsonProperty("timeInForce") TimeInForce timeInForce,
+          @JsonProperty("timeInForce") String timeInForce,
           @JsonProperty("type") OrderType type,
           @JsonProperty("side") OrderSide side,
           @JsonProperty("stopPrice") BigDecimal stopPrice,
@@ -93,4 +93,5 @@ public final class BinanceOrder {
   public int hashCode() {
     return Objects.hash(symbol, orderId, clientOrderId, price, origQty, executedQty, cummulativeQuoteQty, status, timeInForce, type, side, stopPrice, icebergQty, time);
   }
+
 }
