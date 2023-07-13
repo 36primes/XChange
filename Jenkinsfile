@@ -26,7 +26,6 @@ pipeline {
             }
             steps {
                 sh '''
-                    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
                     mvn clean install
                 '''
             }
@@ -37,7 +36,6 @@ pipeline {
             }
             steps {
                 sh '''
-                    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
                     git config user.name "jenkins"
                     git checkout $GIT_BRANCH
                     mvn --batch-mode release:clean release:prepare release:perform -DignoreSnapshots=true
