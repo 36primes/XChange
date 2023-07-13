@@ -38,7 +38,7 @@ pipeline {
                 sh '''
                     git config user.name "jenkins"
                     git checkout $GIT_BRANCH
-                    mvn --batch-mode release:clean release:prepare release:perform -DignoreSnapshots=true -DskipTests=true -Darguments=-DskipTests
+                    mvn --batch-mode release:clean release:prepare release:perform -DignoreSnapshots=true -DskipTests=true -Darguments=-DskipTests -Dmaven.javadoc.skip=true
                 '''
             }
         }
