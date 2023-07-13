@@ -454,27 +454,7 @@
                   </configuration>
               </execution>
             </executions>
-
-
           </plugin>
-          <!-- Generates JavaDocs during package -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <version>3.3.2</version>
-            <executions>
-              <execution>
-                <id>attach-javadocs</id>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-                <configuration>
-                  <doclint>none</doclint>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
         </plugins>
       </build>
     </profile>
@@ -502,24 +482,6 @@
         <version>2.5.3</version>
         <configuration>
           <autoVersionSubmodules>true</autoVersionSubmodules>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.3.2</version>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <quiet>true</quiet>
-          <doclint>none</doclint>
-          <source>${version.java}</source>
         </configuration>
       </plugin>
       <plugin>
