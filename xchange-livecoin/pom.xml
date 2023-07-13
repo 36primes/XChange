@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.knowm.xchange</groupId>
         <artifactId>xchange-parent</artifactId>
-        <version>5.0.14.1</version>
+        <version>5.0.14.2-SNAPSHOT</version>
     </parent>
     <artifactId>xchange-livecoin</artifactId>
     <name>XChange Livecoin</name>
@@ -30,9 +30,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-
-  <scm>
-    <tag>xchange-parent-5.0.14.1</tag>
-  </scm>
 </project>
