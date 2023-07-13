@@ -104,7 +104,6 @@
     <connection>scm:git:git@github.com:36primes/XChange.git</connection>
     <url>http://github.com/user/project</url>
     <developerConnection>scm:git:git@github.com:36primes/XChange.git</developerConnection>
-    <tag>xchange-parent-5.0.14.2</tag>
   </scm>
 
   <modules>
