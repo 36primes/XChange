@@ -6,7 +6,7 @@
     <parent>
         <artifactId>xchange-parent</artifactId>
         <groupId>org.knowm.xchange</groupId>
-        <version>5.0.14-SNAPSHOT</version>
+        <version>5.0.14.1</version>
     </parent>
 
     <artifactId>xchange-btcturk</artifactId>
@@ -40,4 +40,8 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
+
+  <scm>
+    <tag>xchange-parent-5.0.14.1</tag>
+  </scm>
 </project>

@@ -3,7 +3,7 @@
     <parent>
         <artifactId>xchange-parent</artifactId>
         <groupId>org.knowm.xchange</groupId>
-        <version>5.0.14-SNAPSHOT</version>
+        <version>5.0.14.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -30,4 +30,8 @@
     </dependencies>
 
 
+
+  <scm>
+    <tag>xchange-parent-5.0.14.1</tag>
+  </scm>
 </project>
