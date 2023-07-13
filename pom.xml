@@ -9,7 +9,7 @@
 
   <groupId>org.knowm.xchange</groupId>
   <artifactId>xchange-parent</artifactId>
-  <version>5.0.14-SNAPSHOT</version>
+  <version>5.0.14.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>XChange</name>
@@ -68,7 +68,7 @@
     <url>https://github.com/knowm/XChange/issues</url>
   </issueManagement>
 
-  <distributionManagement>
+  <!--distributionManagement>
     <snapshotRepository>
       <id>sonatype-nexus-snapshots</id>
       <name>Sonatype Nexus Snapshots</name>
@@ -81,12 +81,29 @@
     </repository>
     <downloadUrl>https://oss.sonatype.org/content/groups/public/org/knowm/xchange</downloadUrl>
   </distributionManagement>
-
   <scm>
     <connection>scm:git:git@github.com:knowm/XChange.git</connection>
     <developerConnection>scm:git:git@github.com:knowm/XChange.git</developerConnection>
     <url>git@github.com:knowm/XChange.git</url>
     <tag>HEAD</tag>
+  </scm-->
+  <repositories>
+    <repository>
+      <id>home-server-nexus-releases</id>
+      <name>Home Server Nexus</name>
+      <url>http://home-server:8081/repository/maven-releases</url>
+    </repository>
+  </repositories>
+  <distributionManagement>
+    <repository>
+      <id>nexus-releases</id>
+      <url>http://home-server:8081/repository/maven-releases</url>
+    </repository>
+  </distributionManagement>
+  <scm>
+    <connection>scm:git:git@github.com:36primes/XChange.git</connection>
+    <url>http://github.com/user/project</url>
+    <developerConnection>scm:git:git@github.com:36primes/XChange.git</developerConnection>
   </scm>
 
   <modules>
@@ -221,9 +238,9 @@
     <module>xchange-stream-coincheck</module>
   </modules>
 
-  <ciManagement>
+  <!--ciManagementk>
     <url>https://travis-ci.org/github/knowm/XChange</url>
-  </ciManagement>
+  </ciManagementk>
 
   <repositories>
     <repository>
@@ -236,7 +253,7 @@
         <enabled>true</enabled>
       </snapshots>
     </repository>
-  </repositories>
+  </repositories-->
 
   <dependencyManagement>
     <dependencies>

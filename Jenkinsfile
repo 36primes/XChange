@@ -1,19 +1,58 @@
 pipeline {
     agent any
-
+    parameters {
+        booleanParam(defaultValue: false, description: 'Is it Release?', name: 'RELEASE')
+    }
+    environment {
+        POM_RELEASE_VERSION = readMavenPom().getVersion().replaceAll('-SNAPSHOT','')
+    }
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
     stages {
-        stage('Maven Build') {
+        stage('Environment Variables') {
             steps {
-                sh 'mvn clean install -DskipTests=true'
+                    sh '''
+                        echo POM_RELEASE_VERSION: $POM_RELEASE_VERSION
+                        echo GIT_BRANCH: $GIT_BRANCH
+                        java -version
+                        mvn -v
+                    '''
+            }
+        }
+        stage('Maven Snapshot Build') {
+            when {
+                expression { params.RELEASE == false }
+            }
+            steps {
+                sh '''
+                    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+                    mvn clean install
+                '''
+            }
+        }
+        stage('Maven Release Build') {
+            when {
+                expression { params.RELEASE == true }
+            }
+            steps {
+                sh '''
+                    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+                    git config user.name "jenkins"
+                    git checkout $GIT_BRANCH
+                    mvn --batch-mode release:clean release:prepare release:perform -DignoreSnapshots=true
+                '''
             }
         }
         stage('Git Tag') {
+            when {
+                expression { params.RELEASE  == true }
+            }
             steps {
                 sh '''
-                    export GIT_SSH_COMMAND="ssh -i ~/.ssh/jenkins_ed25519 -o 'IdentitiesOnly yes'"
                     git config user.name "jenkins"
-                    git tag v$BUILD_NUMBER
-                    git push origin v$BUILD_NUMBER
+                    git tag v$POM_RELEASE_VERSION.$BUILD_NUMBER
+                    git push origin v$POM_RELEASE_VERSION.$BUILD_NUMBER
                 '''
             }
         }
