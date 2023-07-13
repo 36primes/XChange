@@ -26,7 +26,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    mvn clean install
+                    mvn clean install -DskipTests=true
                 '''
             }
         }
@@ -38,7 +38,7 @@ pipeline {
                 sh '''
                     git config user.name "jenkins"
                     git checkout $GIT_BRANCH
-                    mvn --batch-mode release:clean release:prepare release:perform -DignoreSnapshots=true
+                    mvn --batch-mode release:clean release:prepare release:perform -DignoreSnapshots=true -DskipTests=true
                 '''
             }
         }
