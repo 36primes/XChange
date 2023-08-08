@@ -68,24 +68,23 @@
     <url>https://github.com/knowm/XChange/issues</url>
   </issueManagement>
 
-  <distributionManagement>
-    <snapshotRepository>
-      <id>sonatype-nexus-snapshots</id>
-      <name>Sonatype Nexus Snapshots</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
+  <repositories>
     <repository>
-      <id>sonatype-nexus-staging</id>
-      <name>Nexus Release Repository</name>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      <id>home-server-nexus-releases</id>
+      <name>Home Server Nexus</name>
+      <url>http://home-server:8081/repository/maven-releases</url>
     </repository>
-    <downloadUrl>https://oss.sonatype.org/content/groups/public/org/knowm/xchange</downloadUrl>
+  </repositories>
+  <distributionManagement>
+    <repository>
+      <id>nexus-releases</id>
+      <url>http://home-server:8081/repository/maven-releases</url>
+    </repository>
   </distributionManagement>
-
   <scm>
-    <connection>scm:git:git@github.com:knowm/XChange.git</connection>
-    <developerConnection>scm:git:git@github.com:knowm/XChange.git</developerConnection>
-    <url>git@github.com:knowm/XChange.git</url>
+    <connection>scm:git:git@github.com:36primes/XChange.git</connection>
+    <url>http://github.com/user/project</url>
+    <developerConnection>scm:git:git@github.com:36primes/XChange.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
 
@@ -212,23 +211,6 @@
     <module>xchange-stream-coincheck</module>
     <module>xchange-stream-krakenfutures</module>
   </modules>
-
-  <ciManagement>
-    <url>https://travis-ci.org/github/knowm/XChange</url>
-  </ciManagement>
-
-  <repositories>
-    <repository>
-      <id>sonatype-oss-public</id>
-      <url>https://oss.sonatype.org/content/groups/public/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
 
   <dependencyManagement>
     <dependencies>
@@ -507,19 +489,6 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>3.2.1</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.4.1</version>
         <executions>
@@ -531,9 +500,7 @@
           </execution>
         </executions>
         <configuration>
-          <quiet>true</quiet>
-          <doclint>none</doclint>
-          <source>${version.java}</source>
+          <skip>true</skip>
         </configuration>
       </plugin>
       <plugin>
