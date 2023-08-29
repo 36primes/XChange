@@ -19,6 +19,7 @@ import org.knowm.xchange.derivative.FuturesContract;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.Order.IOrderFlags;
 import org.knowm.xchange.dto.account.OpenPositions;
+import org.knowm.xchange.dto.trade.CancelledOrder;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.MarketOrder;
 import org.knowm.xchange.dto.trade.OpenOrders;
@@ -205,22 +206,54 @@ public class BinanceTradeService extends BinanceTradeServiceRaw implements Trade
   @Override
   public boolean cancelOrder(CancelOrderParams params) throws IOException {
     try {
-      if (!(params instanceof CancelOrderByInstrument)
-          && !(params instanceof CancelOrderByIdParams)) {
-        throw new ExchangeException(
-            "You need to provide the currency pair and the order id to cancel an order.");
-      }
-      assert params instanceof CancelOrderByInstrument;
-      CancelOrderByInstrument paramInstrument = (CancelOrderByInstrument) params;
-      CancelOrderByIdParams paramId = (CancelOrderByIdParams) params;
-      cancelOrderAllProducts(
-          paramInstrument.getInstrument(), BinanceAdapters.id(paramId.getOrderId()), null, null);
-
+      innerCancelOrder(params);
       return true;
     } catch (BinanceException e) {
       throw BinanceErrorAdapter.adapt(e);
     }
   }
+
+  @Override
+  public CancelledOrder cancelOrderEx(CancelOrderParams params) throws IOException {
+    try {
+      BinanceCancelledOrder binanceCancelledOrder = innerCancelOrder(params);
+      if(binanceCancelledOrder != null) {
+        return new CancelledOrder(binanceCancelledOrder.orderId, binanceCancelledOrder.origClientOrderId,
+            binanceCancelledOrder.origQty, binanceCancelledOrder.executedQty);
+      }
+      return null;
+    } catch (BinanceException e) {
+      throw BinanceErrorAdapter.adapt(e);
+    }
+  }
+
+  @Override
+  public Collection<CancelledOrder> cancelAllOrdersEx(CancelAllOrders orderParams) throws IOException {
+    if (!(orderParams instanceof CancelOrderByInstrument)) {
+      throw new NotAvailableFromExchangeException(
+          "Parameters must be an instance of " + CancelOrderByInstrument.class.getSimpleName());
+    }
+    Instrument instrument = ((CancelOrderByInstrument) orderParams).getInstrument();
+    return cancelAllOpenOrdersAllProducts(instrument).stream()
+        .map(binanceCancelledOrder -> new CancelledOrder(binanceCancelledOrder.orderId, binanceCancelledOrder.origClientOrderId,
+            binanceCancelledOrder.origQty, binanceCancelledOrder.executedQty))
+        .collect(Collectors.toList());
+  }
+
+  private BinanceCancelledOrder innerCancelOrder(CancelOrderParams params) throws IOException {
+    if (!(params instanceof CancelOrderByInstrument)
+        && !(params instanceof CancelOrderByIdParams)) {
+      throw new ExchangeException(
+          "You need to provide the currency pair and the order id to cancel an order.");
+    }
+    assert params instanceof CancelOrderByInstrument;
+    CancelOrderByInstrument paramInstrument = (CancelOrderByInstrument) params;
+    CancelOrderByIdParams paramId = (CancelOrderByIdParams) params;
+    BinanceCancelledOrder result = cancelOrderAllProducts(
+        paramInstrument.getInstrument(), BinanceAdapters.id(paramId.getOrderId()), null, null);
+    return result;
+  }
+
 
   @Override
   public boolean cancelOrder(String orderId) {

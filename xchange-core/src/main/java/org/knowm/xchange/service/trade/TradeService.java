@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Collection;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.account.OpenPositions;
+import org.knowm.xchange.dto.trade.CancelledOrder;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.MarketOrder;
 import org.knowm.xchange.dto.trade.OpenOrders;
@@ -213,6 +214,42 @@ public interface TradeService extends BaseService {
   default boolean cancelOrder(String orderId) throws IOException {
     return cancelOrder(new DefaultCancelOrderParamId(orderId));
   }
+
+  /**
+   * cancels order with matching orderParams
+   *
+   * @param orderParams
+   * @return CancelledOrder if order was successfully cancelled, Null otherwise.
+   * @throws ExchangeException - Indication that the exchange reported some kind of error with the
+   *     request or response
+   * @throws NotAvailableFromExchangeException - Indication that the exchange does not support the
+   *     requested function or data
+   * @throws NotYetImplementedForExchangeException - Indication that the exchange supports the
+   *     requested function or data, but it has not yet been implemented
+   * @throws IOException - Indication that a networking error occurred while fetching JSON data
+   */
+  default CancelledOrder cancelOrderEx(CancelOrderParams orderParams) throws IOException {
+    throw new NotYetImplementedForExchangeException("cancelOrderEx");
+  }
+
+  /**
+   * cancels order with matching orderId (conveniance method, typical just delegate to
+   * cancelOrder(CancelOrderByIdParams))
+   *
+   * @param orderParams
+   * @return Collection<CancelledOrder> if order was successfully cancelled, Null otherwise.
+   * @throws ExchangeException - Indication that the exchange reported some kind of error with the
+   *     request or response
+   * @throws NotAvailableFromExchangeException - Indication that the exchange does not support the
+   *     requested function or data
+   * @throws NotYetImplementedForExchangeException - Indication that the exchange supports the
+   *     requested function or data, but it has not yet been implemented
+   * @throws IOException - Indication that a networking error occurred while fetching JSON data
+   */
+  default Collection<CancelledOrder> cancelAllOrdersEx(CancelAllOrders orderParams) throws IOException {
+    throw new NotYetImplementedForExchangeException("cancelAllOpenOrdersEx");
+  }
+
 
   /**
    * cancels order with matching orderParams
