@@ -214,7 +214,7 @@ public class BinanceTradeService extends BinanceTradeServiceRaw implements Trade
   }
 
   @Override
-  public CancelledOrder cancelOrderEx(CancelOrderParams params) throws IOException {
+  public CancelledOrder cancelOrderEx(CancelOrderParams params, long eventTime) throws IOException {
     try {
       BinanceCancelledOrder binanceCancelledOrder = innerCancelOrder(params);
       if(binanceCancelledOrder != null) {
@@ -228,7 +228,7 @@ public class BinanceTradeService extends BinanceTradeServiceRaw implements Trade
   }
 
   @Override
-  public Collection<CancelledOrder> cancelAllOrdersEx(CancelAllOrders orderParams) throws IOException {
+  public Collection<CancelledOrder> cancelAllOrdersEx(CancelAllOrders orderParams, long eventTime) throws IOException {
     if (!(orderParams instanceof CancelOrderByInstrument)) {
       throw new NotAvailableFromExchangeException(
           "Parameters must be an instance of " + CancelOrderByInstrument.class.getSimpleName());

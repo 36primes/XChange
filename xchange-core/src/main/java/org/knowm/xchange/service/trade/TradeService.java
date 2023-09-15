@@ -228,7 +228,7 @@ public interface TradeService extends BaseService {
    *     requested function or data, but it has not yet been implemented
    * @throws IOException - Indication that a networking error occurred while fetching JSON data
    */
-  default CancelledOrder cancelOrderEx(CancelOrderParams orderParams) throws IOException {
+  default CancelledOrder cancelOrderEx(CancelOrderParams orderParams, long eventTime) throws IOException {
     throw new NotYetImplementedForExchangeException("cancelOrderEx");
   }
 
@@ -246,7 +246,7 @@ public interface TradeService extends BaseService {
    *     requested function or data, but it has not yet been implemented
    * @throws IOException - Indication that a networking error occurred while fetching JSON data
    */
-  default Collection<CancelledOrder> cancelAllOrdersEx(CancelAllOrders orderParams) throws IOException {
+  default Collection<CancelledOrder> cancelAllOrdersEx(CancelAllOrders orderParams, long eventTime) throws IOException {
     throw new NotYetImplementedForExchangeException("cancelAllOpenOrdersEx");
   }
 
