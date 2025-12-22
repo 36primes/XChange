@@ -66,27 +66,28 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Configure Git to use HTTPS instead of SSH
-          git config url."https://github.com/".insteadOf "git@github.com:"
-          git config url."https://".insteadOf "git://"
+          # Configure Git to use HTTPS instead of SSH (this handles authentication)
+          git config url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "git@github.com:"
+          git config url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
           
-          # Set up authentication for HTTPS
+          # Set up remote with authentication
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          
+          # Temporarily modify pom.xml to use HTTPS URLs (without embedded token)
+          # Git's url rewriting will handle the authentication
+          sed -i 's|git@github.com:36primes/XChange.git|https://github.com/36primes/XChange.git|g' pom.xml
+          
+          # Show the changes
+          git diff pom.xml
       
       - name: Maven Release Build
         if: ${{ github.event.inputs.release == 'true' }}
         run: |
-          REPO_URL="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
           mvn --batch-mode release:clean release:prepare release:perform \
             -DignoreSnapshots=true \
             -DskipTests=true \
             -Darguments=-DskipTests \
-            -Dmaven.javadoc.skip=true \
-            -DpushChanges=true \
-            -DremoteTagging=false \
-            -Dproject.scm.connection="scm:git:${REPO_URL}" \
-            -Dproject.scm.developerConnection="scm:git:${REPO_URL}" \
-            -Dproject.scm.url="https://github.com/${{ github.repository }}"
+            -Dmaven.javadoc.skip=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
