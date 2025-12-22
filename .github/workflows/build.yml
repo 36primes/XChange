@@ -1,0 +1,84 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+  schedule:
+    # Poll every 5 minutes (equivalent to Jenkins pollSCM)
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Is it a Release?'
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      
+      - name: Extract POM version
+        id: pom-version
+        run: |
+          POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          POM_RELEASE_VERSION=$(echo $POM_VERSION | sed 's/-SNAPSHOT//')
+          echo "pom_version=$POM_VERSION" >> $GITHUB_OUTPUT
+          echo "pom_release_version=$POM_RELEASE_VERSION" >> $GITHUB_OUTPUT
+      
+      - name: Environment Variables
+        run: |
+          echo "POM_RELEASE_VERSION: ${{ steps.pom-version.outputs.pom_release_version }}"
+          echo "GIT_BRANCH: ${{ github.ref_name }}"
+          echo "GITHUB_RUN_NUMBER: ${{ github.run_number }}"
+          java -version
+          mvn -v
+      
+      - name: Maven Snapshot Build
+        if: ${{ github.event.inputs.release != 'true' }}
+        run: mvn clean install -DskipTests=true
+      
+      - name: Configure Git for Release
+        if: ${{ github.event.inputs.release == 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Maven Release Build
+        if: ${{ github.event.inputs.release == 'true' }}
+        run: |
+          mvn --batch-mode release:clean release:prepare release:perform \
+            -DignoreSnapshots=true \
+            -DskipTests=true \
+            -Darguments=-DskipTests \
+            -Dmaven.javadoc.skip=true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Git Tag
+        if: ${{ github.event.inputs.release == 'true' }}
+        run: |
+          TAG_NAME="v${{ steps.pom-version.outputs.pom_release_version }}.${{ github.run_number }}"
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
