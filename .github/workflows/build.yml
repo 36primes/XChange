@@ -76,13 +76,17 @@ jobs:
       - name: Maven Release Build
         if: ${{ github.event.inputs.release == 'true' }}
         run: |
+          REPO_URL="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
           mvn --batch-mode release:clean release:prepare release:perform \
             -DignoreSnapshots=true \
             -DskipTests=true \
             -Darguments=-DskipTests \
             -Dmaven.javadoc.skip=true \
             -DpushChanges=true \
-            -DremoteTagging=false
+            -DremoteTagging=false \
+            -Dproject.scm.connection="scm:git:${REPO_URL}" \
+            -Dproject.scm.developerConnection="scm:git:${REPO_URL}" \
+            -Dproject.scm.url="https://github.com/${{ github.repository }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
