@@ -11,6 +11,7 @@ import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.exceptions.ExchangeException;
+import org.knowm.xchange.instrument.Instrument;
 import org.knowm.xchange.service.trade.params.TradeHistoryParamsSorted;
 import si.mazi.rescu.HttpStatusIOException;
 
@@ -24,15 +25,15 @@ public class CoinfloorTradeServiceRaw extends CoinfloorAuthenticatedService {
   }
 
   public CoinfloorUserTransaction[] getUserTransactions(
-      CurrencyPair pair,
+      Instrument pair,
       Integer numberOfTransactions,
       Long offset,
       TradeHistoryParamsSorted.Order sort)
       throws IOException {
     try {
       return coinfloor.getUserTransactions(
-          normalise(pair.base),
-          normalise(pair.counter),
+          normalise(pair.getBase()),
+          normalise(pair.getCounter()),
           numberOfTransactions,
           offset,
           sort == null ? null : sort.toString());
@@ -47,7 +48,7 @@ public class CoinfloorTradeServiceRaw extends CoinfloorAuthenticatedService {
 
   public CoinfloorOrder[] getOpenOrders(CurrencyPair pair) throws IOException {
     try {
-      return coinfloor.getOpenOrders(normalise(pair.base), normalise(pair.counter));
+      return coinfloor.getOpenOrders(normalise(pair.getBase()), normalise(pair.getCounter()));
     } catch (HttpStatusIOException e) {
       if (e.getHttpStatusCode() == HttpURLConnection.HTTP_BAD_REQUEST) {
         throw new ExchangeException(e.getHttpBody(), e);
@@ -59,8 +60,8 @@ public class CoinfloorTradeServiceRaw extends CoinfloorAuthenticatedService {
 
   public CoinfloorOrder placeLimitOrder(
       CurrencyPair pair, OrderType side, BigDecimal amount, BigDecimal price) throws IOException {
-    Currency base = normalise(pair.base);
-    Currency counter = normalise(pair.counter);
+    Currency base = normalise(pair.getBase());
+    Currency counter = normalise(pair.getCounter());
 
     try {
       if (side == OrderType.BID) {
@@ -81,8 +82,8 @@ public class CoinfloorTradeServiceRaw extends CoinfloorAuthenticatedService {
 
   public CoinfloorMarketOrderResponse placeMarketOrder(
       CurrencyPair pair, OrderType side, BigDecimal amount) throws IOException {
-    Currency base = normalise(pair.base);
-    Currency counter = normalise(pair.counter);
+    Currency base = normalise(pair.getBase());
+    Currency counter = normalise(pair.getCounter());
     try {
       if (side == OrderType.BID) {
         return coinfloor.buyMarket(base, counter, amount);
@@ -102,7 +103,7 @@ public class CoinfloorTradeServiceRaw extends CoinfloorAuthenticatedService {
 
   public boolean cancelOrder(CurrencyPair pair, long id) throws IOException {
     try {
-      return coinfloor.cancelOrder(normalise(pair.base), normalise(pair.counter), id);
+      return coinfloor.cancelOrder(normalise(pair.getBase()), normalise(pair.getCounter()), id);
     } catch (HttpStatusIOException e) {
       if (e.getHttpStatusCode() == HttpURLConnection.HTTP_BAD_REQUEST) {
         throw new ExchangeException(e.getHttpBody(), e);

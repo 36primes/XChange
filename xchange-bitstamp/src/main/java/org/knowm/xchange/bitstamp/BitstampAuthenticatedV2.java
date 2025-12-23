@@ -1,15 +1,16 @@
 package org.knowm.xchange.bitstamp;
 
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.math.BigDecimal;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import java.util.List;
 import org.knowm.xchange.bitstamp.dto.BitstampException;
 import org.knowm.xchange.bitstamp.dto.BitstampTransferBalanceResponse;
 import org.knowm.xchange.bitstamp.dto.account.BitstampBalance;
@@ -17,12 +18,9 @@ import org.knowm.xchange.bitstamp.dto.account.BitstampDepositAddress;
 import org.knowm.xchange.bitstamp.dto.account.BitstampRippleDepositAddress;
 import org.knowm.xchange.bitstamp.dto.account.BitstampWithdrawal;
 import org.knowm.xchange.bitstamp.dto.account.DepositTransaction;
+import org.knowm.xchange.bitstamp.dto.account.WithdrawalFee;
 import org.knowm.xchange.bitstamp.dto.account.WithdrawalRequest;
-import org.knowm.xchange.bitstamp.dto.trade.BitstampCancelAllOrdersResponse;
-import org.knowm.xchange.bitstamp.dto.trade.BitstampOrder;
-import org.knowm.xchange.bitstamp.dto.trade.BitstampOrderCancelResponse;
-import org.knowm.xchange.bitstamp.dto.trade.BitstampOrderStatusResponse;
-import org.knowm.xchange.bitstamp.dto.trade.BitstampUserTransaction;
+import org.knowm.xchange.bitstamp.dto.trade.*;
 import si.mazi.rescu.ParamsDigest;
 import si.mazi.rescu.SynchronizedValueFactory;
 
@@ -80,7 +78,9 @@ public interface BitstampAuthenticatedV2 {
       @FormParam("price") BigDecimal price)
       throws BitstampException, IOException;
 
-  /** @return true if order has been canceled. */
+  /**
+   * @return true if order has been canceled.
+   */
   @POST
   @Path("cancel_order/")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -156,6 +156,27 @@ public interface BitstampAuthenticatedV2 {
       @FormParam("sort") String sort,
       @FormParam("since_timestamp") Long sinceTimestamp,
       @FormParam("since_id") String sinceId)
+      throws BitstampException, IOException;
+
+  @POST
+  @Path("{currency}_withdrawal/")
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  BitstampWithdrawal withdrawCrypto(
+      @HeaderParam("X-Auth") String apiKey,
+      @HeaderParam("X-Auth-Signature") ParamsDigest signer,
+      @HeaderParam("X-Auth-Nonce") SynchronizedValueFactory<String> nonce,
+      @HeaderParam("X-Auth-Timestamp") SynchronizedValueFactory<String> timestamp,
+      @HeaderParam("X-Auth-Version") String version,
+      @PathParam("currency") String currency,
+      @FormParam("address") String address,
+      @FormParam("amount") BigDecimal amount,
+      @FormParam("contact_thirdparty") Boolean contactThirdparty,
+      @FormParam("contact_uuid") String contactUuid,
+      @FormParam("destination_tag") String destinationTag,
+      @FormParam("memo_id") String memoId,
+      @FormParam("network") String network,
+      @FormParam("transfer_id") Integer transferId,
+      @FormParam("vasp_uuid") String vaspUuid)
       throws BitstampException, IOException;
 
   /**
@@ -623,13 +644,33 @@ public interface BitstampAuthenticatedV2 {
   @POST
   @Path("withdrawal-requests/")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  WithdrawalRequest[] getWithdrawalRequests(
+  List<WithdrawalRequest> getWithdrawalRequests(
       @HeaderParam("X-Auth") String apiKey,
       @HeaderParam("X-Auth-Signature") ParamsDigest signer,
       @HeaderParam("X-Auth-Nonce") SynchronizedValueFactory<String> nonce,
       @HeaderParam("X-Auth-Timestamp") SynchronizedValueFactory<String> timeStamp,
       @HeaderParam("X-Auth-Version") String version,
       @FormParam("timedelta") Long timeDelta)
+      throws BitstampException, IOException;
+
+  @POST
+  @Path("fees/withdrawal/")
+  List<WithdrawalFee> getWithdrawalFees(
+      @HeaderParam("X-Auth") String apiKey,
+      @HeaderParam("X-Auth-Signature") ParamsDigest signer,
+      @HeaderParam("X-Auth-Nonce") SynchronizedValueFactory<String> nonce,
+      @HeaderParam("X-Auth-Timestamp") SynchronizedValueFactory<String> timeStamp,
+      @HeaderParam("X-Auth-Version") String version)
+      throws BitstampException, IOException;
+
+  @POST
+  @Path("fees/trading/")
+  List<BitstampTradingFee> getTradingFees(
+      @HeaderParam("X-Auth") String apiKey,
+      @HeaderParam("X-Auth-Signature") ParamsDigest signer,
+      @HeaderParam("X-Auth-Nonce") SynchronizedValueFactory<String> nonce,
+      @HeaderParam("X-Auth-Timestamp") SynchronizedValueFactory<String> timeStamp,
+      @HeaderParam("X-Auth-Version") String version)
       throws BitstampException, IOException;
 
   @POST
@@ -741,6 +782,35 @@ public interface BitstampAuthenticatedV2 {
       @HeaderParam("X-Auth-Nonce") SynchronizedValueFactory<String> nonce,
       @HeaderParam("X-Auth-Timestamp") SynchronizedValueFactory<String> timeStamp,
       @HeaderParam("X-Auth-Version") String version)
+      throws BitstampException, IOException;
+
+  @POST
+  @Path("{side}/instant/{pair}/")
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  BitstampOrder placeInstantMarketOrder(
+      @HeaderParam("X-Auth") String apiKey,
+      @HeaderParam("X-Auth-Signature") ParamsDigest signer,
+      @HeaderParam("X-Auth-Nonce") SynchronizedValueFactory<String> nonce,
+      @HeaderParam("X-Auth-Timestamp") SynchronizedValueFactory<String> timeStamp,
+      @HeaderParam("X-Auth-Version") String version,
+      @PathParam("side") Side side,
+      @PathParam("pair") BitstampV2.Pair pair,
+      @FormParam("amount") BigDecimal amount)
+      throws BitstampException, IOException;
+
+  @POST
+  @Path("{side}/instant/{pair}/")
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  BitstampOrder placeInstantSellMarketOrder(
+      @HeaderParam("X-Auth") String apiKey,
+      @HeaderParam("X-Auth-Signature") ParamsDigest signer,
+      @HeaderParam("X-Auth-Nonce") SynchronizedValueFactory<String> nonce,
+      @HeaderParam("X-Auth-Timestamp") SynchronizedValueFactory<String> timeStamp,
+      @HeaderParam("X-Auth-Version") String version,
+      @PathParam("side") Side side,
+      @PathParam("pair") BitstampV2.Pair pair,
+      @FormParam("amount") BigDecimal amount,
+      @FormParam("amount_in_counter") boolean amountInCounter)
       throws BitstampException, IOException;
 
   enum Side {

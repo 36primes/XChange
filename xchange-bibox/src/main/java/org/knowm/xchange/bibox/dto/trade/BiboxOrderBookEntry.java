@@ -9,10 +9,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Generated;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({"price", "volume"})
 public class BiboxOrderBookEntry {
 
@@ -24,25 +22,33 @@ public class BiboxOrderBookEntry {
 
   @JsonIgnore private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-  /** @return The price */
+  /**
+   * @return The price
+   */
   @JsonProperty("price")
   public BigDecimal getPrice() {
     return price;
   }
 
-  /** @param price The price */
+  /**
+   * @param price The price
+   */
   @JsonProperty("price")
   public void setPrice(BigDecimal price) {
     this.price = price;
   }
 
-  /** @return The volume */
+  /**
+   * @return The volume
+   */
   @JsonProperty("volume")
   public BigDecimal getVolume() {
     return volume;
   }
 
-  /** @param volume The volume */
+  /**
+   * @param volume The volume
+   */
   @JsonProperty("volume")
   public void setVolume(BigDecimal volume) {
     this.volume = volume;

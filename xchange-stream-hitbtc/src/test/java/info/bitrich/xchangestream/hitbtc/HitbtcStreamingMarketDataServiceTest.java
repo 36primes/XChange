@@ -5,8 +5,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.reactivex.Observable;
-import io.reactivex.observers.TestObserver;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.observers.TestObserver;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -123,30 +123,30 @@ public class HitbtcStreamingMarketDataServiceTest {
         .thenReturn(Observable.just(objectMapper.readTree(trades)));
 
     Trade expected1 =
-        new Trade.Builder()
+        Trade.builder()
             .type(Order.OrderType.BID)
             .originalAmount(new BigDecimal("0.057"))
-            .currencyPair(CurrencyPair.BTC_USD)
+            .instrument(CurrencyPair.BTC_USD)
             .price(new BigDecimal("0.054656"))
             .timestamp(new Date(1508430822821L))
             .id("54469456")
             .build();
 
     Trade expected2 =
-        new Trade.Builder()
+        Trade.builder()
             .type(Order.OrderType.BID)
             .originalAmount(new BigDecimal("0.092"))
-            .currencyPair(CurrencyPair.BTC_USD)
+            .instrument(CurrencyPair.BTC_USD)
             .price(new BigDecimal("0.054656"))
             .timestamp(new Date(1508430828754L))
             .id("54469497")
             .build();
 
     Trade expected3 =
-        new Trade.Builder()
+        Trade.builder()
             .type(Order.OrderType.BID)
             .originalAmount(new BigDecimal("0.002"))
-            .currencyPair(CurrencyPair.BTC_USD)
+            .instrument(CurrencyPair.BTC_USD)
             .price(new BigDecimal("0.054669"))
             .timestamp(new Date(1508430853288L))
             .id("54469697")
@@ -168,7 +168,7 @@ public class HitbtcStreamingMarketDataServiceTest {
           assertThat(trade.getPrice()).isEqualTo(expected.getPrice());
           assertThat(trade.getType()).isEqualTo(expected.getType());
           assertThat(trade.getOriginalAmount()).isEqualTo(expected.getOriginalAmount());
-          assertThat(trade.getCurrencyPair()).isEqualTo(expected.getCurrencyPair());
+          assertThat(trade.getInstrument()).isEqualTo(expected.getInstrument());
           assertThat(trade.getTimestamp()).isEqualTo(expected.getTimestamp());
           return true;
         });

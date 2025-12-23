@@ -9,7 +9,9 @@ import org.knowm.xchange.oer.OER;
 import org.knowm.xchange.oer.dto.marketdata.OERRates;
 import org.knowm.xchange.oer.dto.marketdata.OERTickers;
 
-/** @author timmolter */
+/**
+ * @author timmolter
+ */
 public class OERMarketDataServiceRaw extends OERBaseService {
 
   private final OER openExchangeRates;
@@ -33,8 +35,8 @@ public class OERMarketDataServiceRaw extends OERBaseService {
     OERTickers oERTickers =
         openExchangeRates.getTickers(
             exchange.getExchangeSpecification().getApiKey(),
-            pair.base.toString(),
-            pair.counter.toString());
+            pair.getBase().toString(),
+            pair.getCounter().toString());
     if (oERTickers == null) {
       throw new ExchangeException("Null response returned from Open Exchange Rates!");
     }

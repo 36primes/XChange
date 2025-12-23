@@ -11,7 +11,9 @@ import org.knowm.xchange.cexio.dto.marketdata.CexIOTrade;
 import org.knowm.xchange.client.ExchangeRestProxyBuilder;
 import org.knowm.xchange.currency.CurrencyPair;
 
-/** @author timmolter */
+/**
+ * @author timmolter
+ */
 public class CexIOMarketDataServiceRaw extends CexIOBaseService {
 
   private final CexIO cexio;
@@ -38,7 +40,7 @@ public class CexIOMarketDataServiceRaw extends CexIOBaseService {
 
     CexIOTicker cexIOTicker =
         cexio.getTicker(
-            currencyPair.base.getCurrencyCode(), currencyPair.counter.getCurrencyCode());
+            currencyPair.getBase().getCurrencyCode(), currencyPair.getCounter().getCurrencyCode());
 
     return cexIOTicker;
   }
@@ -46,7 +48,8 @@ public class CexIOMarketDataServiceRaw extends CexIOBaseService {
   public CexIODepth getCexIOOrderBook(CurrencyPair currencyPair) throws IOException {
 
     CexIODepth cexIODepth =
-        cexio.getDepth(currencyPair.base.getCurrencyCode(), currencyPair.counter.getCurrencyCode());
+        cexio.getDepth(
+            currencyPair.getBase().getCurrencyCode(), currencyPair.getCounter().getCurrencyCode());
 
     return cexIODepth;
   }
@@ -58,11 +61,14 @@ public class CexIOMarketDataServiceRaw extends CexIOBaseService {
     if (since != null) {
       trades =
           cexio.getTradesSince(
-              currencyPair.base.getCurrencyCode(), currencyPair.counter.getCurrencyCode(), since);
+              currencyPair.getBase().getCurrencyCode(),
+              currencyPair.getCounter().getCurrencyCode(),
+              since);
     } else { // default to full available trade history
       trades =
           cexio.getTrades(
-              currencyPair.base.getCurrencyCode(), currencyPair.counter.getCurrencyCode());
+              currencyPair.getBase().getCurrencyCode(),
+              currencyPair.getCounter().getCurrencyCode());
     }
 
     return trades;

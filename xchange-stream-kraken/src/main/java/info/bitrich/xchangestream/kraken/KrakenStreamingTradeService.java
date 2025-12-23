@@ -6,7 +6,7 @@ import info.bitrich.xchangestream.kraken.dto.KrakenOpenOrder;
 import info.bitrich.xchangestream.kraken.dto.KrakenOwnTrade;
 import info.bitrich.xchangestream.kraken.dto.enums.KrakenSubscriptionName;
 import info.bitrich.xchangestream.service.netty.StreamingObjectMapperHelper;
-import io.reactivex.Observable;
+import io.reactivex.rxjava3.core.Observable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,6 +39,18 @@ public class KrakenStreamingTradeService implements StreamingTradeService {
 
   KrakenStreamingTradeService(KrakenStreamingService streamingService) {
     this.streamingService = streamingService;
+
+    if (streamingService != null) {
+      streamingService
+          .subscribeDisconnect()
+          .subscribe(
+              o -> {
+                synchronized (this) {
+                  ownTradesObservableSet = false;
+                  userTradeObservableSet = false;
+                }
+              });
+    }
   }
 
   private String getChannelName(KrakenSubscriptionName subscriptionName) {
@@ -117,6 +129,7 @@ public class KrakenStreamingTradeService implements StreamingTradeService {
                 .id(orderId)
                 .originalAmount(dto.vol)
                 .cumulativeAmount(dto.vol_exec)
+                .averagePrice(dto.avg_price)
                 .orderStatus(
                     dto.status == null
                         ? null
@@ -124,7 +137,7 @@ public class KrakenStreamingTradeService implements StreamingTradeService {
                 .timestamp(dto.opentm == null ? null : new Date((long) (dto.opentm * 1000L)))
                 .fee(dto.fee)
                 .flags(adaptFlags(dto.oflags))
-                .userReference(dto.userref == null ? null : Integer.toString(dto.userref))
+                .userReference(resolveUserReference(dto.cl_ord_id, dto.userref))
                 .build());
       }
     }
@@ -196,20 +209,25 @@ public class KrakenStreamingTradeService implements StreamingTradeService {
 
         CurrencyPair currencyPair = new CurrencyPair(dto.pair);
         result.add(
-            new UserTrade.Builder()
+            UserTrade.builder()
                 .id(tradeId) // The tradeId should be the key of the map, postxid can be null and is
                 // not unique as required for a tradeId
                 .orderId(dto.ordertxid)
-                .currencyPair(currencyPair)
+                .instrument(currencyPair)
                 .timestamp(dto.time == null ? null : new Date((long) (dto.time * 1000L)))
                 .type(KrakenAdapters.adaptOrderType(KrakenType.fromString(dto.type)))
                 .price(dto.price)
                 .feeAmount(dto.fee)
-                .feeCurrency(currencyPair.counter)
+                .feeCurrency(currencyPair.getCounter())
                 .originalAmount(dto.vol)
+                .orderUserReference(resolveUserReference(dto.cl_ord_id, dto.userref))
                 .build());
       }
     }
     return result;
+  }
+
+  private static String resolveUserReference(String cl_ord_id, Integer userref) {
+    return cl_ord_id == null ? userref == null ? null : Integer.toString(userref) : cl_ord_id;
   }
 }

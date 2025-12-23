@@ -2,6 +2,7 @@ package org.knowm.xchange.dvchain;
 
 import java.util.concurrent.TimeUnit;
 import org.knowm.xchange.BaseExchange;
+import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.dvchain.service.DVChainMarketDataService;
 import org.knowm.xchange.dvchain.service.DVChainTradeService;
@@ -13,10 +14,12 @@ public class DVChainExchange extends BaseExchange {
       new CurrentTimeIncrementalNonceFactory(TimeUnit.SECONDS);
 
   /** Adjust host parameters depending on exchange specific parameters */
-  private static void concludeHostParams(ExchangeSpecification exchangeSpecification) {
+  protected void concludeHostParams(ExchangeSpecification exchangeSpecification) {
 
     if (exchangeSpecification.getExchangeSpecificParameters() != null) {
-      if (exchangeSpecification.getExchangeSpecificParametersItem("Use_Sandbox").equals(true)) {
+      if (exchangeSpecification
+          .getExchangeSpecificParametersItem(Exchange.USE_SANDBOX)
+          .equals(true)) {
 
         exchangeSpecification.setSslUri("https://sandbox.trade.dvchain.co");
         exchangeSpecification.setHost("sandbox.trade.dvchain.co");
@@ -35,7 +38,7 @@ public class DVChainExchange extends BaseExchange {
     exchangeSpecification.setExchangeDescription(
         "DVChain is an OTC provider for a variety of cryptocurrencies.");
 
-    exchangeSpecification.setExchangeSpecificParametersItem("Use_Sandbox", false);
+    exchangeSpecification.setExchangeSpecificParametersItem(Exchange.USE_SANDBOX, false);
 
     return exchangeSpecification;
   }

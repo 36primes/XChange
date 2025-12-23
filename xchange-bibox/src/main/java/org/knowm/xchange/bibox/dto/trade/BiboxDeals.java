@@ -9,10 +9,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Generated;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({"pair", "price", "amount", "time", "side"})
 public class BiboxDeals {
 
@@ -21,15 +19,19 @@ public class BiboxDeals {
 
   @JsonProperty("pair")
   private String pair;
+
   /** transaction price */
   @JsonProperty("price")
   private BigDecimal price;
+
   /** transaction amount */
   @JsonProperty("amount")
   private BigDecimal amount;
+
   /** transaction time */
   @JsonProperty("time")
   private long time;
+
   /** transaction side，1-bid，2-ask */
   @JsonProperty("side")
   private int side;

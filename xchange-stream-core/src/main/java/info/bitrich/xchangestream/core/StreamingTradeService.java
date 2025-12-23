@@ -1,8 +1,9 @@
 package info.bitrich.xchangestream.core;
 
-import io.reactivex.Observable;
+import io.reactivex.rxjava3.core.Observable;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
+import org.knowm.xchange.dto.account.OpenPosition;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.exceptions.ExchangeSecurityException;
 import org.knowm.xchange.exceptions.NotYetImplementedForExchangeException;
@@ -71,5 +72,13 @@ public interface StreamingTradeService {
       return getUserTrades((CurrencyPair) instrument, args);
     }
     throw new NotYetImplementedForExchangeException("getUserTrades");
+  }
+
+  default Observable<UserTrade> getUserTrades() {
+    throw new NotYetImplementedForExchangeException("getAllUserTrades");
+  }
+
+  default Observable<OpenPosition> getPositionChanges(Instrument instrument) {
+    throw new NotYetImplementedForExchangeException("getPositionChanges");
   }
 }

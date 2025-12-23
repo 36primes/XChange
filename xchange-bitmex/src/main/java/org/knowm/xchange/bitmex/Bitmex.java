@@ -1,14 +1,15 @@
 package org.knowm.xchange.bitmex;
 
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.Date;
 import javax.annotation.Nullable;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
 import org.knowm.xchange.bitmex.dto.account.BitmexTickerList;
+import org.knowm.xchange.bitmex.dto.marketdata.BitmexAsset;
 import org.knowm.xchange.bitmex.dto.marketdata.BitmexFundingList;
 import org.knowm.xchange.bitmex.dto.marketdata.BitmexKlineList;
 import org.knowm.xchange.bitmex.dto.marketdata.BitmexPublicOrderList;
@@ -41,7 +42,7 @@ public interface Bitmex {
   @GET
   @Path("orderBook/L2")
   BitmexPublicOrderList getDepth(
-      @QueryParam("symbol") String currencyPair, @QueryParam("depth") Double depth)
+      @QueryParam("symbol") String currencyPair, @QueryParam("depth") Integer depth)
       throws IOException, BitmexException;
 
   @GET
@@ -77,4 +78,8 @@ public interface Bitmex {
       @Nullable @QueryParam("startTime") Date startTime,
       @Nullable @QueryParam("endTime") Date endTime)
       throws IOException, BitmexException;
+
+  @GET
+  @Path("wallet/assets")
+  HttpResponseAwareList<BitmexAsset> getAssets() throws IOException, BitmexException;
 }

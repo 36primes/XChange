@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Generated;
 
 /**
  * Bitfinex withdrawal response mapping class
@@ -16,7 +15,6 @@ import javax.annotation.Generated;
  * @author Ondrej Novotny <ondrej.novotny@onlab.cz>
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({"status", "message", "withdrawal_id"})
 public class BitfinexWithdrawalResponse {
 
@@ -31,37 +29,49 @@ public class BitfinexWithdrawalResponse {
 
   @JsonIgnore private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-  /** @return The status */
+  /**
+   * @return The status
+   */
   @JsonProperty("status")
   public String getStatus() {
     return status;
   }
 
-  /** @param status The status */
+  /**
+   * @param status The status
+   */
   @JsonProperty("status")
   public void setStatus(String status) {
     this.status = status;
   }
 
-  /** @return The message */
+  /**
+   * @return The message
+   */
   @JsonProperty("message")
   public String getMessage() {
     return message;
   }
 
-  /** @param message The message */
+  /**
+   * @param message The message
+   */
   @JsonProperty("message")
   public void setMessage(String message) {
     this.message = message;
   }
 
-  /** @return The withdrawalId */
+  /**
+   * @return The withdrawalId
+   */
   @JsonProperty("withdrawal_id")
   public String getWithdrawalId() {
     return withdrawalId;
   }
 
-  /** @param withdrawalId The withdrawal_id */
+  /**
+   * @param withdrawalId The withdrawal_id
+   */
   @JsonProperty("withdrawal_id")
   public void setWithdrawalId(String withdrawalId) {
     this.withdrawalId = withdrawalId;

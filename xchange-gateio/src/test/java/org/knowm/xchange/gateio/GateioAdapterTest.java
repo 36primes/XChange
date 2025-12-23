@@ -27,10 +27,11 @@ import org.knowm.xchange.gateio.dto.marketdata.GateioCurrencyPairs;
 import org.knowm.xchange.gateio.dto.marketdata.GateioDepth;
 import org.knowm.xchange.gateio.dto.marketdata.GateioTradeHistory;
 import org.knowm.xchange.gateio.dto.trade.GateioOpenOrders;
+import org.knowm.xchange.instrument.Instrument;
 
 public class GateioAdapterTest {
 
-  Collection<CurrencyPair> currencyPairs;
+  Collection<Instrument> currencyPairs;
 
   @Before
   public void before() throws JsonParseException, JsonMappingException, IOException {
@@ -91,7 +92,7 @@ public class GateioAdapterTest {
     Trade trade = tradeList.get(0);
     assertThat(trade.getType()).isEqualTo(OrderType.ASK);
     assertThat(trade.getOriginalAmount()).isEqualTo("0.0129");
-    assertThat(trade.getCurrencyPair()).isEqualTo(CurrencyPair.BTC_CNY);
+    assertThat(trade.getInstrument()).isEqualTo(CurrencyPair.BTC_CNY);
     assertThat(trade.getPrice()).isEqualTo("3942");
     assertThat(trade.getTimestamp()).isEqualTo(new Date(1393908191000L));
     assertThat(trade.getId()).isEqualTo("5600118");

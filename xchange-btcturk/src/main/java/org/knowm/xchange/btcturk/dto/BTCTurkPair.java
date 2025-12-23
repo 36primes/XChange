@@ -4,7 +4,9 @@ import java.util.Objects;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.utils.jackson.CurrencyPairDeserializer;
 
-/** @author mertguner */
+/**
+ * @author mertguner
+ */
 public class BTCTurkPair {
   public final CurrencyPair pair;
 
@@ -32,6 +34,7 @@ public class BTCTurkPair {
   public String toString() {
     return pair == null
         ? ""
-        : String.format("%s%s", pair.base.getCurrencyCode(), pair.counter.getCurrencyCode());
+        : String.format(
+            "%s%s", pair.getBase().getCurrencyCode(), pair.getCounter().getCurrencyCode());
   }
 }

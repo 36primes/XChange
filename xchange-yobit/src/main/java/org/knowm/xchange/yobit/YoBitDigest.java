@@ -1,11 +1,11 @@
 package org.knowm.xchange.yobit;
 
+import jakarta.ws.rs.FormParam;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
-import java.util.Random;
+import java.security.SecureRandom;
 import javax.crypto.Mac;
-import javax.ws.rs.FormParam;
 import org.knowm.xchange.service.BaseParamsDigest;
 import si.mazi.rescu.Params;
 import si.mazi.rescu.RestInvocation;
@@ -41,7 +41,7 @@ public class YoBitDigest extends BaseParamsDigest {
 
   private static String getRandomSecretKey() {
     byte[] array = new byte[7];
-    new Random().nextBytes(array);
+    new SecureRandom().nextBytes(array);
     return new String(array, Charset.forName("UTF-8"));
   }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.exceptions.ExchangeException;
+import org.knowm.xchange.instrument.Instrument;
 import org.knowm.xchange.zaif.dto.ZaifException;
 import org.knowm.xchange.zaif.dto.marketdata.ZaifFullBook;
 import org.knowm.xchange.zaif.dto.marketdata.ZaifMarket;
@@ -18,8 +19,8 @@ public class ZaifMarketDataServiceRaw extends ZaifBaseService {
   public ZaifFullBook getZaifFullBook(CurrencyPair currencyPair) throws IOException {
     try {
       return this.zaif.getDepth(
-          currencyPair.base.toString().toLowerCase(),
-          currencyPair.counter.toString().toLowerCase());
+          currencyPair.getBase().toString().toLowerCase(),
+          currencyPair.getCounter().toString().toLowerCase());
     } catch (ZaifException e) {
       throw new ExchangeException(e.getMessage());
     }
@@ -36,11 +37,11 @@ public class ZaifMarketDataServiceRaw extends ZaifBaseService {
   public boolean checkProductExists(CurrencyPair currencyPair) {
 
     boolean currencyPairSupported = false;
-    for (CurrencyPair cp : exchange.getExchangeSymbols()) {
-      if (cp.base.getCurrencyCode().equalsIgnoreCase(currencyPair.base.getCurrencyCode())
-          && cp.counter
+    for (Instrument cp : exchange.getExchangeInstruments()) {
+      if (cp.getBase().getCurrencyCode().equalsIgnoreCase(currencyPair.getBase().getCurrencyCode())
+          && cp.getCounter()
               .getCurrencyCode()
-              .equalsIgnoreCase(currencyPair.counter.getCurrencyCode())) {
+              .equalsIgnoreCase(currencyPair.getCounter().getCurrencyCode())) {
         currencyPairSupported = true;
         break;
       }

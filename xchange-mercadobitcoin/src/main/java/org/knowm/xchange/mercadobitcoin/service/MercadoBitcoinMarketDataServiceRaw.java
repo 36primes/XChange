@@ -12,7 +12,9 @@ import org.knowm.xchange.mercadobitcoin.dto.marketdata.MercadoBitcoinOrderBook;
 import org.knowm.xchange.mercadobitcoin.dto.marketdata.MercadoBitcoinTicker;
 import org.knowm.xchange.mercadobitcoin.dto.marketdata.MercadoBitcoinTransaction;
 
-/** @author Felipe Micaroni Lalli */
+/**
+ * @author Felipe Micaroni Lalli
+ */
 public class MercadoBitcoinMarketDataServiceRaw extends MercadoBitcoinBaseService {
 
   private final MercadoBitcoin mercadoBitcoin;
@@ -34,13 +36,13 @@ public class MercadoBitcoinMarketDataServiceRaw extends MercadoBitcoinBaseServic
       throws IOException {
 
     MercadoBitcoinUtils.verifyCurrencyPairAvailability(currencyPair);
-    return mercadoBitcoin.getOrderBook(currencyPair.base.getSymbol());
+    return mercadoBitcoin.getOrderBook(currencyPair.getBase().getSymbol());
   }
 
   public MercadoBitcoinTicker getMercadoBitcoinTicker(CurrencyPair currencyPair)
       throws IOException {
     MercadoBitcoinUtils.verifyCurrencyPairAvailability(currencyPair);
-    return mercadoBitcoin.getTicker(currencyPair.base.getSymbol());
+    return mercadoBitcoin.getTicker(currencyPair.getBase().getSymbol());
   }
 
   public MercadoBitcoinTransaction[] getMercadoBitcoinTransactions(
@@ -53,12 +55,13 @@ public class MercadoBitcoinMarketDataServiceRaw extends MercadoBitcoinBaseServic
     if (args.length == 0) {
 
       // default values: offset=0, limit=100
-      transactions = mercadoBitcoin.getTransactions(currencyPair.base.getSymbol());
+      transactions = mercadoBitcoin.getTransactions(currencyPair.getBase().getSymbol());
 
     } else if (args.length == 1) {
       BigDecimal time = new BigDecimal((Long) args[0]);
       transactions =
-          mercadoBitcoin.getTransactions(currencyPair.base.getSymbol(), time.longValue() / 1000L);
+          mercadoBitcoin.getTransactions(
+              currencyPair.getBase().getSymbol(), time.longValue() / 1000L);
 
     } else if (args.length == 2) {
       BigDecimal timeStart = new BigDecimal((Long) args[0]);
@@ -66,7 +69,7 @@ public class MercadoBitcoinMarketDataServiceRaw extends MercadoBitcoinBaseServic
 
       transactions =
           mercadoBitcoin.getTransactions(
-              currencyPair.base.getSymbol(),
+              currencyPair.getBase().getSymbol(),
               timeStart.longValue() / 1000L,
               timeEnd.longValue() / 1000L);
     } else {

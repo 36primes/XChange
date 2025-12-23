@@ -36,7 +36,9 @@ import org.knowm.xchange.service.trade.params.orders.OpenOrdersParamCurrencyPair
 import org.knowm.xchange.service.trade.params.orders.OpenOrdersParams;
 import org.knowm.xchange.service.trade.params.orders.OrderQueryParams;
 
-/** @author Matija Mazi */
+/**
+ * @author Matija Mazi
+ */
 public class BTCMarketsTradeService extends BTCMarketsTradeServiceRaw implements TradeService {
 
   public BTCMarketsTradeService(Exchange exchange) {
@@ -84,7 +86,8 @@ public class BTCMarketsTradeService extends BTCMarketsTradeServiceRaw implements
 
     BTCMarketsOrder.Side side =
         orderSide == BID ? BTCMarketsOrder.Side.Bid : BTCMarketsOrder.Side.Ask;
-    final String marketId = currencyPair.base.toString() + "-" + currencyPair.counter.toString();
+    final String marketId =
+        currencyPair.getBase().toString() + "-" + currencyPair.getCounter().toString();
     String timeInForce;
     if (flags.contains(BTCMarketsOrderFlags.FOK)) {
       timeInForce = "FOK";

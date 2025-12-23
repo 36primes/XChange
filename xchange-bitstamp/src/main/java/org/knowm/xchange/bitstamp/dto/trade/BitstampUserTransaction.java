@@ -11,14 +11,16 @@ import java.util.Set;
 import org.knowm.xchange.bitstamp.BitstampUtils;
 import org.knowm.xchange.currency.Currency;
 
-/** @author Matija Mazi */
+/**
+ * @author Matija Mazi
+ */
 public final class BitstampUserTransaction {
 
   private final Date datetime;
   private final long id;
   private final long order_id;
   private final TransactionType type;
-  private final BigDecimal fee;
+  private final String fee;
   private final Map<String, BigDecimal> amounts = new HashMap<>();
   // possible pairs at the moment: btcusd, btceur, eurusd, xrpusd, xrpeur, xrpbtc
   private String base; // btc, eur, xrp
@@ -39,7 +41,7 @@ public final class BitstampUserTransaction {
       @JsonProperty("id") long id,
       @JsonProperty("order_id") long order_id,
       @JsonProperty("type") TransactionType type,
-      @JsonProperty("fee") BigDecimal fee) {
+      @JsonProperty("fee") String fee) {
 
     this.datetime = BitstampUtils.parseDate(datetime);
     this.id = id;
@@ -86,11 +88,11 @@ public final class BitstampUserTransaction {
   }
 
   public boolean isDeposit() {
-    return type == TransactionType.deposit;
+    return type == TransactionType.deposit || type == TransactionType.rippleDeposit;
   }
 
   public boolean isWithdrawal() {
-    return type == TransactionType.withdrawal;
+    return type == TransactionType.withdrawal || type == TransactionType.rippleWithdrawal;
   }
 
   public boolean isMarketTrade() {
@@ -98,7 +100,7 @@ public final class BitstampUserTransaction {
   }
 
   public boolean isSubAccountTransfer() {
-    return type == TransactionType.subAccountTransfer;
+    return type == TransactionType.subAccountTransfer || type == TransactionType.settlementTransfer;
   }
 
   public BigDecimal getCounterAmount() {
@@ -121,7 +123,7 @@ public final class BitstampUserTransaction {
     return base;
   }
 
-  public BigDecimal getFee() {
+  public String getFee() {
     return fee;
   }
 
@@ -167,7 +169,9 @@ public final class BitstampUserTransaction {
     sentAssetsToStaking,
     stakingReward,
     referralReward,
-    interAccountTransfer;
+    interAccountTransfer,
+    settlementTransfer,
+    unknown;
 
     @JsonCreator
     public static TransactionType fromString(int type) {
@@ -192,10 +196,12 @@ public final class BitstampUserTransaction {
           return stakingReward;
         case 32:
           return referralReward;
+        case 33:
+          return settlementTransfer;
         case 35:
           return interAccountTransfer;
         default:
-          throw new IllegalArgumentException(type + " has no corresponding value");
+          return unknown;
       }
     }
   }

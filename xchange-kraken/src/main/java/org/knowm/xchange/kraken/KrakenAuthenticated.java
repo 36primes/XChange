@@ -1,15 +1,17 @@
 package org.knowm.xchange.kraken;
 
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import org.knowm.xchange.kraken.dto.KrakenResult;
+import org.knowm.xchange.kraken.dto.account.KrakenExtendedBalance;
 import org.knowm.xchange.kraken.dto.account.results.DepositStatusResult;
 import org.knowm.xchange.kraken.dto.account.results.KrakenBalanceResult;
 import org.knowm.xchange.kraken.dto.account.results.KrakenDepositAddressResult;
@@ -69,6 +71,15 @@ public interface KrakenAuthenticated extends Kraken {
       throws IOException;
 
   @POST
+  @Path("private/BalanceEx")
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  KrakenResult<Map<String, KrakenExtendedBalance>> balanceEx(
+      @HeaderParam("API-Key") String apiKey,
+      @HeaderParam("API-Sign") ParamsDigest signer,
+      @FormParam("nonce") SynchronizedValueFactory<Long> nonce)
+      throws IOException;
+
+  @POST
   @Path("private/Ledgers")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   KrakenLedgerResult ledgers(
@@ -110,6 +121,8 @@ public interface KrakenAuthenticated extends Kraken {
       @FormParam("expiretm") String expireTime,
       @FormParam("userref") String userRefId,
       @FormParam("close") Map<String, String> closeOrder,
+      @FormParam("timeinforce") String timeInForce,
+      @FormParam("cl_ord_id") String clientOrderId,
       @HeaderParam("API-Key") String apiKey,
       @HeaderParam("API-Sign") ParamsDigest signer,
       @FormParam("nonce") SynchronizedValueFactory<Long> nonce)
@@ -133,6 +146,8 @@ public interface KrakenAuthenticated extends Kraken {
       @FormParam("userref") String userRefId,
       @FormParam("validate") boolean validateOnly,
       @FormParam("close") Map<String, String> closeOrder,
+      @FormParam("timeinforce") String timeInForce,
+      @FormParam("cl_ord_id") String clientOrderId,
       @HeaderParam("API-Key") String apiKey,
       @HeaderParam("API-Sign") ParamsDigest signer,
       @FormParam("nonce") SynchronizedValueFactory<Long> nonce)
@@ -147,6 +162,14 @@ public interface KrakenAuthenticated extends Kraken {
       @FormParam("nonce") SynchronizedValueFactory<Long> nonce,
       @FormParam("txid") String transactionId)
       throws IOException;
+
+  @POST
+  @Path("private/CancelAll")
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  KrakenCancelOrderResult cancelAllOrders(
+      @HeaderParam("API-Key") String apiKey,
+      @HeaderParam("API-Sign") ParamsDigest signer,
+      @FormParam("nonce") SynchronizedValueFactory<Long> nonce);
 
   @POST
   @Path("private/OpenOrders")

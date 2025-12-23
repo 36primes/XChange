@@ -21,9 +21,9 @@ import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.meta.CurrencyMetaData;
-import org.knowm.xchange.dto.meta.CurrencyPairMetaData;
 import org.knowm.xchange.dto.meta.ExchangeMetaData;
 import org.knowm.xchange.dto.meta.FeeTier;
+import org.knowm.xchange.dto.meta.InstrumentMetaData;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.OpenOrders;
 import org.knowm.xchange.dto.trade.UserTrade;
@@ -41,6 +41,7 @@ import org.knowm.xchange.hitbtc.v2.dto.HitbtcTrade;
 import org.knowm.xchange.hitbtc.v2.dto.HitbtcTransaction;
 import org.knowm.xchange.hitbtc.v2.dto.HitbtcUserTrade;
 import org.knowm.xchange.hitbtc.v2.service.HitbtcMarketDataServiceRaw;
+import org.knowm.xchange.instrument.Instrument;
 
 public class HitbtcAdapters {
 
@@ -169,10 +170,10 @@ public class HitbtcAdapters {
       }
       OrderType orderType = adaptSide(hitbtcTrade.getSide());
       Trade trade =
-          new Trade.Builder()
+          Trade.builder()
               .type(orderType)
               .originalAmount(amount)
-              .currencyPair(currencyPair)
+              .instrument(currencyPair)
               .price(price)
               .timestamp(timestamp)
               .id(tid)
@@ -233,18 +234,18 @@ public class HitbtcAdapters {
       String clientOrderId = hitbtcOwnTrade.getClientOrderId();
 
       UserTrade trade =
-          new HitbtcUserTrade(
-              type,
-              originalAmount,
-              pair,
-              hitbtcOwnTrade.getPrice(),
-              timestamp,
-              id,
-              orderId,
-              hitbtcOwnTrade.getFee(),
-              pair.counter,
-              clientOrderId);
-
+          HitbtcUserTrade.builder()
+              .type(type)
+              .originalAmount(originalAmount)
+              .instrument(pair)
+              .price(hitbtcOwnTrade.getPrice())
+              .timestamp(timestamp)
+              .id(id)
+              .orderId(orderId)
+              .feeAmount(hitbtcOwnTrade.getFee())
+              .feeCurrency(pair.getCounter())
+              .orderUserReference(clientOrderId)
+              .build();
       trades.add(trade);
     }
 
@@ -266,7 +267,9 @@ public class HitbtcAdapters {
 
   public static String adaptCurrencyPair(CurrencyPair pair) {
 
-    return pair == null ? null : pair.base.getCurrencyCode() + pair.counter.getCurrencyCode();
+    return pair == null
+        ? null
+        : pair.getBase().getCurrencyCode() + pair.getCounter().getCurrencyCode();
   }
 
   public static HitbtcSide getSide(OrderType type) {
@@ -277,7 +280,7 @@ public class HitbtcAdapters {
   public static ExchangeMetaData adaptToExchangeMetaData(
       List<HitbtcSymbol> symbols,
       Map<Currency, CurrencyMetaData> currencies,
-      Map<CurrencyPair, CurrencyPairMetaData> currencyPairs) {
+      Map<Instrument, InstrumentMetaData> currencyPairs) {
     if (symbols != null) {
       for (HitbtcSymbol symbol : symbols) {
         CurrencyPair pair = adaptSymbol(symbol);
@@ -290,17 +293,21 @@ public class HitbtcAdapters {
 
         FeeTier[] feeTiers = null;
         if (currencyPairs.containsKey(pair)) {
-          CurrencyPairMetaData existing = currencyPairs.get(pair);
+          InstrumentMetaData existing = currencyPairs.get(pair);
           minimumAmount = existing.getMinimumAmount();
           maximumAmount = existing.getMaximumAmount();
           feeTiers = existing.getFeeTiers();
         }
 
-        CurrencyPairMetaData meta =
-            new CurrencyPairMetaData(
-                tradingFee, minimumAmount, maximumAmount, priceScale, feeTiers);
-
-        currencyPairs.put(pair, meta);
+        currencyPairs.put(
+            pair,
+            InstrumentMetaData.builder()
+                .tradingFee(tradingFee)
+                .minimumAmount(minimumAmount)
+                .maximumAmount(maximumAmount)
+                .priceScale(priceScale)
+                .feeTiers(feeTiers)
+                .build());
       }
     }
 
@@ -317,25 +324,25 @@ public class HitbtcAdapters {
       description += ", paymentId: " + transaction.getPaymentId();
     }
 
-    return new FundingRecord.Builder()
-        .setAddress(transaction.getAddress())
-        .setCurrency(Currency.getInstance(transaction.getCurrency()))
-        .setAmount(transaction.getAmount())
-        .setType(convertType(transaction.getType()))
-        .setFee(transaction.getFee())
-        .setDescription(description)
-        .setStatus(convertStatus(transaction.getStatus()))
-        .setInternalId(transaction.getId())
-        .setBlockchainTransactionHash(transaction.getHash())
-        .setDate(transaction.getCreatedAt())
+    return FundingRecord.builder()
+        .address(transaction.getAddress())
+        .currency(Currency.getInstance(transaction.getCurrency()))
+        .amount(transaction.getAmount())
+        .type(convertType(transaction.getType()))
+        .fee(transaction.getFee())
+        .description(description)
+        .status(convertStatus(transaction.getStatus()))
+        .internalId(transaction.getId())
+        .blockchainTransactionHash(transaction.getHash())
+        .date(transaction.getCreatedAt())
         .build();
   }
 
   /**
    * @param type
    * @return
-   * @see https://api.hitbtc.com/api/2/explore/ Transaction Model possible types: payout, payin,
-   *     deposit, withdraw, bankToExchange, exchangeToBank
+   * @see <a href="https://api.hitbtc.com/api/2/explore/">Transaction Model possible types: payout,
+   *     payin,</a> deposit, withdraw, bankToExchange, exchangeToBank
    */
   private static Type convertType(String type) {
     switch (type) {
@@ -354,8 +361,8 @@ public class HitbtcAdapters {
 
   /**
    * @return
-   * @see https://api.hitbtc.com/api/2/explore/ Transaction Model possible statusses: created,
-   *     pending, failed, success
+   * @see <a href="https://api.hitbtc.com/api/2/explore/">Transaction Model possible statusses:
+   *     created,</a> pending, failed, success
    */
   private static FundingRecord.Status convertStatus(String status) {
     switch (status) {
@@ -375,8 +382,8 @@ public class HitbtcAdapters {
    * Decodes HitBTC Order status.
    *
    * @return
-   * @see https://api.hitbtc.com/#order-model Order Model possible statuses: new, suspended,
-   *     partiallyFilled, filled, canceled, expired
+   * @see <a href="https://api.hitbtc.com/#order-model">Order Model possible statuses: new,
+   *     suspended,</a> partiallyFilled, filled, canceled, expired
    */
   private static Order.OrderStatus convertOrderStatus(String status) {
     switch (status) {

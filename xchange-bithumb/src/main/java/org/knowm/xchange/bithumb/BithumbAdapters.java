@@ -122,7 +122,7 @@ public final class BithumbAdapters {
   public static Trade adaptTransactionHistory(
       BithumbTransactionHistory trade, CurrencyPair currencyPair) {
 
-    return new Trade.Builder()
+    return Trade.builder()
         .id(String.valueOf(trade.getTimestamp().getTime()))
         .instrument(currencyPair)
         .originalAmount(trade.getUnitsTraded())
@@ -179,12 +179,12 @@ public final class BithumbAdapters {
   private static UserTrade adaptUserTrade(
       BithumbUserTransaction bithumbTransaction, CurrencyPair currencyPair) {
 
-    return new UserTrade.Builder()
-        .currencyPair(currencyPair)
+    return UserTrade.builder()
+        .instrument(currencyPair)
         .originalAmount(bithumbTransaction.getUnits())
         .type(adaptTransactionSearch(bithumbTransaction.getSearch()))
         .feeAmount(bithumbTransaction.getFee())
-        .feeCurrency(currencyPair.counter)
+        .feeCurrency(currencyPair.getCounter())
         .price(bithumbTransaction.getPrice())
         .timestamp(new Date(bithumbTransaction.getTransferDate() / 1000L))
         .build();

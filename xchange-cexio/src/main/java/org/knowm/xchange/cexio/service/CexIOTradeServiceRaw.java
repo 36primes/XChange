@@ -53,8 +53,8 @@ public class CexIOTradeServiceRaw extends CexIOBaseService {
 
   public List<CexIOOrder> getCexIOOpenOrders(CurrencyPair currencyPair) throws IOException {
 
-    String tradableIdentifier = currencyPair.base.getCurrencyCode();
-    String transactionCurrency = currencyPair.counter.getCurrencyCode();
+    String tradableIdentifier = currencyPair.getBase().getCurrencyCode();
+    String transactionCurrency = currencyPair.getCounter().getCurrencyCode();
 
     return cexIOAuthenticated
         .getOpenOrders(
@@ -71,8 +71,8 @@ public class CexIOTradeServiceRaw extends CexIOBaseService {
     CexIOOrder order =
         cexIOAuthenticated.placeOrder(
             signatureCreator,
-            limitOrder.getCurrencyPair().base.getCurrencyCode(),
-            limitOrder.getCurrencyPair().counter.getCurrencyCode(),
+            limitOrder.getCurrencyPair().getBase().getCurrencyCode(),
+            limitOrder.getCurrencyPair().getCounter().getCurrencyCode(),
             new CexioPlaceOrderRequest(
                 (limitOrder.getType() == BID ? CexIOOrder.Type.buy : CexIOOrder.Type.sell),
                 limitOrder.getLimitPrice(),
@@ -98,8 +98,8 @@ public class CexIOTradeServiceRaw extends CexIOBaseService {
     CexIOOrder order =
         cexIOAuthenticated.placeOrder(
             signatureCreator,
-            marketOrder.getCurrencyPair().base.getCurrencyCode(),
-            marketOrder.getCurrencyPair().counter.getCurrencyCode(),
+            marketOrder.getCurrencyPair().getBase().getCurrencyCode(),
+            marketOrder.getCurrencyPair().getCounter().getCurrencyCode(),
             new CexioPlaceOrderRequest(
                 (marketOrder.getType() == BID ? CexIOOrder.Type.buy : CexIOOrder.Type.sell),
                 null,
@@ -121,8 +121,8 @@ public class CexIOTradeServiceRaw extends CexIOBaseService {
       throws IOException {
     return cexIOAuthenticated.cancelAllOrders(
         signatureCreator,
-        currencyPair.base.getCurrencyCode(),
-        currencyPair.counter.getCurrencyCode(),
+        currencyPair.getBase().getCurrencyCode(),
+        currencyPair.getCounter().getCurrencyCode(),
         new CexIORequest());
   }
 
@@ -149,8 +149,8 @@ public class CexIOTradeServiceRaw extends CexIOBaseService {
     CexIOCancelReplaceOrderResponse response =
         cexIOAuthenticated.cancelReplaceOrder(
             signatureCreator,
-            currencyPair.base.getCurrencyCode(),
-            currencyPair.counter.getCurrencyCode(),
+            currencyPair.getBase().getCurrencyCode(),
+            currencyPair.getCounter().getCurrencyCode(),
             new CexioCancelReplaceOrderRequest(orderId, orderType, amount, price));
 
     if (response.getError() != null) {
@@ -175,8 +175,8 @@ public class CexIOTradeServiceRaw extends CexIOBaseService {
       CexIOTradeHistoryParams params = (CexIOTradeHistoryParams) tradeHistoryParams;
 
       CurrencyPair currencyPair = params.currencyPair;
-      baseCcy = currencyPair == null ? null : currencyPair.base.getCurrencyCode();
-      counterCcy = currencyPair == null ? null : currencyPair.counter.getCurrencyCode();
+      baseCcy = currencyPair == null ? null : currencyPair.getBase().getCurrencyCode();
+      counterCcy = currencyPair == null ? null : currencyPair.getCounter().getCurrencyCode();
       limit = params.limit;
       dateTo = params.dateTo;
       dateFrom = params.dateFrom;
@@ -200,8 +200,8 @@ public class CexIOTradeServiceRaw extends CexIOBaseService {
         CurrencyPair currencyPair =
             ((TradeHistoryParamCurrencyPair) tradeHistoryParams).getCurrencyPair();
 
-        baseCcy = currencyPair == null ? null : currencyPair.base.getCurrencyCode();
-        counterCcy = currencyPair == null ? null : currencyPair.counter.getCurrencyCode();
+        baseCcy = currencyPair == null ? null : currencyPair.getBase().getCurrencyCode();
+        counterCcy = currencyPair == null ? null : currencyPair.getCounter().getCurrencyCode();
       }
 
       if (tradeHistoryParams instanceof TradeHistoryParamLimit) {
@@ -269,8 +269,8 @@ public class CexIOTradeServiceRaw extends CexIOBaseService {
     CexioOpenPositionsResponse response =
         cexIOAuthenticated.getOpenPositions(
             signatureCreator,
-            currencyPair.base.getSymbol(),
-            currencyPair.counter.getSymbol(),
+            currencyPair.getBase().getSymbol(),
+            currencyPair.getCounter().getSymbol(),
             new CexIORequest());
     if (!"ok".equalsIgnoreCase(response.getStatus())) {
       throw new ExchangeException(response.getEventName() + " " + response.getStatus());
@@ -317,10 +317,10 @@ public class CexIOTradeServiceRaw extends CexIOBaseService {
     CexioOpenPositionResponse order =
         cexIOAuthenticated.openPosition(
             signatureCreator,
-            currencyPair.base.getCurrencyCode(),
-            currencyPair.counter.getCurrencyCode(),
+            currencyPair.getBase().getCurrencyCode(),
+            currencyPair.getCounter().getCurrencyCode(),
             new CexIOOpenPositionRequest(
-                currencyPair.base.getCurrencyCode(),
+                currencyPair.getBase().getCurrencyCode(),
                 amount,
                 collateral.getCurrencyCode(),
                 leverage,
@@ -338,8 +338,8 @@ public class CexIOTradeServiceRaw extends CexIOBaseService {
     CexioClosePositionResponse response =
         cexIOAuthenticated.closePosition(
             signatureCreator,
-            currencyPair.base.getSymbol(),
-            currencyPair.counter.getSymbol(),
+            currencyPair.getBase().getSymbol(),
+            currencyPair.getCounter().getSymbol(),
             new CexIOGetPositionRequest(id));
     if (!"ok".equalsIgnoreCase(response.getStatus())) {
       throw new ExchangeException(response.getEventName() + " " + response.getStatus());
@@ -355,8 +355,10 @@ public class CexIOTradeServiceRaw extends CexIOBaseService {
 
     /** end date for last change orders filtering (timestamp in seconds, 10 digits) */
     private final Long lastTxDateTo;
+
     /** start date for last change order filtering (timestamp in seconds, 10 digits) */
     private final Long lastTxDateFrom;
+
     /**
      * "d" — done (fully executed), "c" — canceled (not executed), "cd" — cancel-done (partially
      * executed)
@@ -364,10 +366,13 @@ public class CexIOTradeServiceRaw extends CexIOBaseService {
     private final String status; // todo: this should be an enum
 
     private CurrencyPair currencyPair;
+
     /** limit the number of entries in response (1 to 100) */
     private Integer limit;
+
     /** end date for open orders filtering (timestamp in seconds, 10 digits) */
     private Long dateTo;
+
     /** start date for open order filtering (timestamp in seconds, 10 digits) */
     private Long dateFrom;
 

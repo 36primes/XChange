@@ -63,8 +63,10 @@ public class LunoTradeService extends LunoBaseService implements TradeService {
 
   @Override
   public OpenOrders getOpenOrders(OpenOrdersParams params)
-      throws ExchangeException, NotAvailableFromExchangeException,
-          NotYetImplementedForExchangeException, IOException {
+      throws ExchangeException,
+          NotAvailableFromExchangeException,
+          NotYetImplementedForExchangeException,
+          IOException {
     List<LimitOrder> list = new ArrayList<>();
     for (org.knowm.xchange.luno.dto.trade.LunoOrders.Order lo :
         lunoAPI.listOrders(State.PENDING, null).getOrders()) {
@@ -167,16 +169,16 @@ public class LunoTradeService extends LunoBaseService implements TradeService {
       final Currency feeCurrency;
       if (t.feeBase.compareTo(BigDecimal.ZERO) > 0) {
         feeAmount = t.feeBase;
-        feeCurrency = pair.base;
+        feeCurrency = pair.getBase();
       } else {
         feeAmount = t.feeCounter;
-        feeCurrency = pair.counter;
+        feeCurrency = pair.getCounter();
       }
       trades.add(
-          new UserTrade.Builder()
+          UserTrade.builder()
               .type(t.buy ? OrderType.BID : OrderType.ASK)
               .originalAmount(t.volume)
-              .currencyPair(pair)
+              .instrument(pair)
               .price(t.price)
               .timestamp(t.getTimestamp())
               .id(tradeId)

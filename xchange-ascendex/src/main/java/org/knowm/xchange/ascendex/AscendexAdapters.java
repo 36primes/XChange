@@ -1,13 +1,8 @@
 package org.knowm.xchange.ascendex;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.knowm.xchange.ascendex.dto.account.AscendexCashAccountBalanceDto;
 import org.knowm.xchange.ascendex.dto.marketdata.AscendexAssetDto;
 import org.knowm.xchange.ascendex.dto.marketdata.AscendexMarketTradesDto;
@@ -26,12 +21,13 @@ import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.meta.CurrencyMetaData;
-import org.knowm.xchange.dto.meta.CurrencyPairMetaData;
 import org.knowm.xchange.dto.meta.ExchangeMetaData;
+import org.knowm.xchange.dto.meta.InstrumentMetaData;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.OpenOrders;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.dto.trade.UserTrades;
+import org.knowm.xchange.instrument.Instrument;
 import org.knowm.xchange.utils.jackson.CurrencyPairDeserializer;
 
 public class AscendexAdapters {
@@ -88,7 +84,7 @@ public class AscendexAdapters {
     return new AccountInfo(
         Wallet.Builder.from(balances)
             .id("spot")
-            .features(new HashSet<>(Collections.singletonList(Wallet.WalletFeature.TRADING)))
+            .features(EnumSet.of(Wallet.WalletFeature.TRADING))
             .build());
   }
 
@@ -117,7 +113,7 @@ public class AscendexAdapters {
     ascendexOrderHistoryResponse.forEach(
         order ->
             userTrades.add(
-                new UserTrade.Builder()
+                UserTrade.builder()
                     .feeAmount(order.getCumFee())
                     .orderId(order.getOrderId())
                     .price(order.getPrice())
@@ -125,7 +121,7 @@ public class AscendexAdapters {
                     .originalAmount(order.getOrderQty())
                     .id(order.getOrderId())
                     .timestamp(order.getLastExecTime())
-                    .currencyPair(
+                    .instrument(
                         CurrencyPairDeserializer.getCurrencyPairFromString(order.getSymbol()))
                     .feeCurrency(new Currency(order.getFeeAsset()))
                     .instrument(
@@ -137,9 +133,13 @@ public class AscendexAdapters {
 
   public static OpenOrders adaptOpenOrders(
       List<AscendexOpenOrdersResponse> ascendexOpenOrdersRespons) {
-    List<LimitOrder> openOrders = new ArrayList<>(ascendexOpenOrdersRespons.size());
 
-    ascendexOpenOrdersRespons.forEach(AscendexAdapters::adaptOpenOrderById);
+    List<LimitOrder> openOrders =
+        ascendexOpenOrdersRespons.stream()
+            .flatMap(r -> AscendexAdapters.adaptOpenOrderById(r).stream())
+            .filter(LimitOrder.class::isInstance) // ensure only LimitOrders
+            .map(LimitOrder.class::cast)
+            .collect(Collectors.toList());
 
     return new OpenOrders(openOrders);
   }
@@ -160,7 +160,12 @@ public class AscendexAdapters {
             .id(ascendexOpenOrdersResponse.getOrderId())
             .timestamp(ascendexOpenOrdersResponse.getLastExecTime())
             .orderStatus(
-                Order.OrderStatus.valueOf(ascendexOpenOrdersResponse.getStatus().toUpperCase()))
+                Order.OrderStatus.valueOf(
+                    ascendexOpenOrdersResponse
+                        .getStatus()
+                        .toUpperCase()
+                        .replace("PARTIALLYFILLED", "PARTIALLY_FILLED")))
+            .cumulativeAmount(ascendexOpenOrdersResponse.getCumFilledQty())
             .remainingAmount(
                 ascendexOpenOrdersResponse
                     .getOrderQty()
@@ -177,7 +182,7 @@ public class AscendexAdapters {
   public static ExchangeMetaData adaptExchangeMetaData(
       List<AscendexAssetDto> ascendexAssetDtos, List<AscendexProductDto> ascendexProductDtos) {
     Map<Currency, CurrencyMetaData> currencyMetaDataMap = new HashMap<>(ascendexAssetDtos.size());
-    Map<CurrencyPair, CurrencyPairMetaData> currencyPairMetaDataMap =
+    Map<Instrument, InstrumentMetaData> currencyPairMetaDataMap =
         new HashMap<>(ascendexProductDtos.size());
 
     ascendexAssetDtos.forEach(
@@ -193,14 +198,16 @@ public class AscendexAdapters {
         ascendexProductDto ->
             currencyPairMetaDataMap.put(
                 CurrencyPairDeserializer.getCurrencyPairFromString(ascendexProductDto.getSymbol()),
-                new CurrencyPairMetaData.Builder()
+                InstrumentMetaData.builder()
                     .tradingFee(ascendexProductDto.getCommissionReserveRate())
                     .priceScale(ascendexProductDto.getTickSize().scale())
-                    .baseScale(ascendexProductDto.getLotSize().scale())
+                    .volumeScale(ascendexProductDto.getLotSize().scale())
                     .counterMinimumAmount(ascendexProductDto.getMinNotional())
                     .counterMaximumAmount(ascendexProductDto.getMaxNotional())
-                    .minimumAmount(ascendexProductDto.getLotSize())
-                    .amountStepSize(ascendexProductDto.getTickSize())
+                    .minimumAmount(ascendexProductDto.getMinQty())
+                    .maximumAmount(ascendexProductDto.getMaxQty())
+                    .amountStepSize(ascendexProductDto.getLotSize())
+                    .priceStepSize(ascendexProductDto.getTickSize())
                     .build()));
 
     return new ExchangeMetaData(currencyPairMetaDataMap, currencyMetaDataMap, null, null, null);
@@ -223,7 +230,7 @@ public class AscendexAdapters {
         .forEach(
             ascendexMarketTradesData ->
                 trades.add(
-                    new Trade.Builder()
+                    Trade.builder()
                         .price(ascendexMarketTradesData.getPrice())
                         .originalAmount(ascendexMarketTradesData.getQuantity())
                         .timestamp(ascendexMarketTradesData.getTimestamp())

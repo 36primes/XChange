@@ -81,9 +81,9 @@ public class CoinfloorAdapters {
 
       long msSinceEpoch = tx.getDate() * 1000;
       Trade trade =
-          new Trade.Builder()
+          Trade.builder()
               .originalAmount(tx.getAmount())
-              .currencyPair(pair)
+              .instrument(pair)
               .price(tx.getPrice())
               .timestamp(DateUtils.fromMillisUtc(msSinceEpoch))
               .id(String.valueOf(tradeId))
@@ -129,16 +129,16 @@ public class CoinfloorAdapters {
       final BigDecimal feeAmount = transaction.getFee();
 
       UserTrade trade =
-          new UserTrade.Builder()
+          UserTrade.builder()
               .type(transaction.getSide())
               .originalAmount(transaction.getAmount().abs())
-              .currencyPair(transaction.getCurrencyPair())
+              .instrument(transaction.getCurrencyPair())
               .price(transaction.getPrice())
               .timestamp(timestamp)
               .id(tradeId)
               .orderId(orderId)
               .feeAmount(feeAmount)
-              .feeCurrency(transaction.getCurrencyPair().counter)
+              .feeCurrency(transaction.getCurrencyPair().getCounter())
               .build();
       trades.add(trade);
     }

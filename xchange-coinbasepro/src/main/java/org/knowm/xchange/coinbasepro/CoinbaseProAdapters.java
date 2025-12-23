@@ -43,8 +43,8 @@ import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.marketdata.Trades.TradeSortType;
 import org.knowm.xchange.dto.meta.CurrencyMetaData;
-import org.knowm.xchange.dto.meta.CurrencyPairMetaData;
 import org.knowm.xchange.dto.meta.ExchangeMetaData;
+import org.knowm.xchange.dto.meta.InstrumentMetaData;
 import org.knowm.xchange.dto.meta.WalletHealth;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.MarketOrder;
@@ -52,6 +52,7 @@ import org.knowm.xchange.dto.trade.OpenOrders;
 import org.knowm.xchange.dto.trade.StopOrder;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.dto.trade.UserTrades;
+import org.knowm.xchange.instrument.Instrument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -308,16 +309,16 @@ public class CoinbaseProAdapters {
       CurrencyPair currencyPair = new CurrencyPair(fill.getProductId().replace('-', '/'));
 
       trades.add(
-          new UserTrade.Builder()
+          UserTrade.builder()
               .type("buy".equals(fill.getSide()) ? OrderType.BID : OrderType.ASK)
               .originalAmount(fill.getSize())
-              .currencyPair(currencyPair)
+              .instrument(currencyPair)
               .price(fill.getPrice())
               .timestamp(parseDate(fill.getCreatedAt()))
               .id(String.valueOf(fill.getTradeId()))
               .orderId(fill.getOrderId())
               .feeAmount(fill.getFee())
-              .feeCurrency(currencyPair.counter)
+              .feeCurrency(currencyPair.getCounter())
               .build());
     }
 
@@ -331,7 +332,7 @@ public class CoinbaseProAdapters {
       // yes, sell means buy for coinbasePro reported trades..
       OrderType type = "sell".equals(trade.getSide()) ? OrderType.BID : OrderType.ASK;
       trades.add(
-          new Trade.Builder()
+          Trade.builder()
               .type(type)
               .originalAmount(trade.getSize())
               .price(trade.getPrice())
@@ -364,8 +365,8 @@ public class CoinbaseProAdapters {
       CoinbaseProProduct[] products,
       CoinbaseProCurrency[] cbCurrencies) {
 
-    Map<CurrencyPair, CurrencyPairMetaData> currencyPairs =
-        exchangeMetaData == null ? new HashMap<>() : exchangeMetaData.getCurrencyPairs();
+    Map<Instrument, InstrumentMetaData> currencyPairs =
+        exchangeMetaData == null ? new HashMap<>() : exchangeMetaData.getInstruments();
 
     Map<Currency, CurrencyMetaData> currencies =
         exchangeMetaData == null ? new HashMap<>() : exchangeMetaData.getCurrencies();
@@ -376,26 +377,25 @@ public class CoinbaseProAdapters {
       }
       CurrencyPair pair = adaptCurrencyPair(product);
 
-      CurrencyPairMetaData staticMetaData = currencyPairs.get(pair);
+      InstrumentMetaData staticMetaData = currencyPairs.get(pair);
       int baseScale = numberOfDecimals(product.getBaseIncrement());
       int priceScale = numberOfDecimals(product.getQuoteIncrement());
       boolean marketOrderAllowed = !product.isLimitOnly();
 
       currencyPairs.put(
           pair,
-          new CurrencyPairMetaData(
-              new BigDecimal("0.50"), // Trading fee at Coinbase is 0.5 %
-              product.getBaseMinSize(),
-              product.getBaseMaxSize(),
-              product.getMinMarketFunds(),
-              product.getMaxMarketFunds(),
-              baseScale,
-              priceScale,
-              null,
-              staticMetaData != null ? staticMetaData.getFeeTiers() : null,
-              null,
-              pair.counter,
-              marketOrderAllowed));
+          InstrumentMetaData.builder()
+              .tradingFee(new BigDecimal("0.50"))
+              .minimumAmount(product.getBaseMinSize())
+              .maximumAmount(product.getBaseMaxSize())
+              .volumeScale(baseScale)
+              .priceScale(priceScale)
+              .counterMinimumAmount(product.getMinMarketFunds())
+              .counterMaximumAmount(product.getMaxMarketFunds())
+              .feeTiers(staticMetaData != null ? staticMetaData.getFeeTiers() : null)
+              .tradingFeeCurrency(pair.getCounter())
+              .marketOrderEnabled(marketOrderAllowed)
+              .build());
     }
 
     Arrays.stream(cbCurrencies)
@@ -422,7 +422,9 @@ public class CoinbaseProAdapters {
   public static String adaptProductID(CurrencyPair currencyPair) {
     return currencyPair == null
         ? null
-        : currencyPair.base.getCurrencyCode() + "-" + currencyPair.counter.getCurrencyCode();
+        : currencyPair.getBase().getCurrencyCode()
+            + "-"
+            + currencyPair.getCounter().getCurrencyCode();
   }
 
   public static CoinbaseProPlaceOrder.Side adaptSide(OrderType orderType) {
@@ -520,19 +522,17 @@ public class CoinbaseProAdapters {
     String cryptoTransactionHash = coinbaseProTransfer.getDetails().getCryptoTransactionHash();
     String transactionHash = adaptTransactionHash(currency.getSymbol(), cryptoTransactionHash);
 
-    return new FundingRecord(
-        address,
-        coinbaseProTransfer.getDetails().getDestinationTag(),
-        coinbaseProTransfer.createdAt(),
-        currency,
-        coinbaseProTransfer.amount(),
-        coinbaseProTransfer.getId(),
-        transactionHash,
-        coinbaseProTransfer.type(),
-        status,
-        null,
-        null,
-        null);
+    return FundingRecord.builder()
+        .address(address)
+        .addressTag(coinbaseProTransfer.getDetails().getDestinationTag())
+        .date(coinbaseProTransfer.createdAt())
+        .currency(currency)
+        .amount(coinbaseProTransfer.amount())
+        .internalId(coinbaseProTransfer.getId())
+        .blockchainTransactionHash(transactionHash)
+        .type(coinbaseProTransfer.type())
+        .status(status)
+        .build();
   }
 
   // crypto_transaction_link: "https://etherscan.io/tx/0x{{txId}}"

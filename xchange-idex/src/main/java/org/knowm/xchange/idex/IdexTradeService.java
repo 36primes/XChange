@@ -10,7 +10,6 @@ import static org.knowm.xchange.idex.IdexSignature.generateSignature;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -162,11 +161,11 @@ public class IdexTradeService extends BaseExchangeService implements TradeServic
           returnTradeHistoryApi.tradeHistory((TradeHistoryReq) tradeHistoryParams).stream()
               .map(
                   tradeHistoryItem ->
-                      new UserTrade.Builder()
+                      UserTrade.builder()
                           .originalAmount(
                               IdexExchange.Companion.safeParse(tradeHistoryItem.getAmount()))
                           .price(IdexExchange.Companion.safeParse(tradeHistoryItem.getPrice()))
-                          .currencyPair(currencyPair)
+                          .instrument(currencyPair)
                           .timestamp(new Date(tradeHistoryItem.getTimestamp().longValue() * 1000))
                           .id((tradeHistoryItem.getTransactionHash()))
                           .type(
@@ -183,12 +182,6 @@ public class IdexTradeService extends BaseExchangeService implements TradeServic
       e.printStackTrace();
     }
     return ret;
-  }
-
-  @Override
-  public Collection<Order> getOrder(String... strings) {
-    ReturnOpenOrdersApi proxy = returnOpenOrdersApi;
-    return Collections.emptyList();
   }
 
   @Override
@@ -230,8 +223,8 @@ public class IdexTradeService extends BaseExchangeService implements TradeServic
   @Override
   public String placeLimitOrder(LimitOrder placeOrder) {
     OrderType type = placeOrder.getType();
-    Currency baseCurrency = placeOrder.getCurrencyPair().base;
-    Currency counterCurrency = placeOrder.getCurrencyPair().counter;
+    Currency baseCurrency = placeOrder.getCurrencyPair().getBase();
+    Currency counterCurrency = placeOrder.getCurrencyPair().getCounter();
     BigDecimal originalAmount = placeOrder.getOriginalAmount();
     BigDecimal limitPrice = placeOrder.getLimitPrice();
     OrderReq orderReq =

@@ -8,10 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Generated;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({"message"})
 public class VaultoroExceptionData {
 
@@ -20,14 +18,18 @@ public class VaultoroExceptionData {
 
   @JsonIgnore private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-  /** @return The message */
+  /**
+   * @return The message
+   */
   @JsonProperty("message")
   public String getMessage() {
 
     return message;
   }
 
-  /** @param message The message */
+  /**
+   * @param message The message
+   */
   @JsonProperty("message")
   public void setMessage(String message) {
 

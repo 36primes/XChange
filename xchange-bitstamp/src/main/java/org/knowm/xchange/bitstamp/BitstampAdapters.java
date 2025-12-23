@@ -19,6 +19,7 @@ import org.knowm.xchange.bitstamp.dto.marketdata.BitstampTransaction;
 import org.knowm.xchange.bitstamp.dto.trade.BitstampOrderStatus;
 import org.knowm.xchange.bitstamp.dto.trade.BitstampOrderStatusResponse;
 import org.knowm.xchange.bitstamp.dto.trade.BitstampOrderTransaction;
+import org.knowm.xchange.bitstamp.dto.trade.BitstampTradingFee;
 import org.knowm.xchange.bitstamp.dto.trade.BitstampUserTransaction;
 import org.knowm.xchange.bitstamp.order.dto.BitstampGenericOrder;
 import org.knowm.xchange.currency.Currency;
@@ -27,6 +28,7 @@ import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.dto.account.AccountInfo;
 import org.knowm.xchange.dto.account.Balance;
+import org.knowm.xchange.dto.account.Fee;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.account.Wallet;
 import org.knowm.xchange.dto.marketdata.OrderBook;
@@ -35,13 +37,14 @@ import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.marketdata.Trades.TradeSortType;
 import org.knowm.xchange.dto.meta.CurrencyMetaData;
-import org.knowm.xchange.dto.meta.CurrencyPairMetaData;
 import org.knowm.xchange.dto.meta.ExchangeMetaData;
+import org.knowm.xchange.dto.meta.InstrumentMetaData;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.dto.trade.UserTrades;
 import org.knowm.xchange.exceptions.ExchangeException;
 import org.knowm.xchange.exceptions.NotYetImplementedForExchangeException;
+import org.knowm.xchange.instrument.Instrument;
 import org.knowm.xchange.utils.DateUtils;
 
 /** Various adapters for converting from Bitstamp DTOs to XChange DTOs */
@@ -159,10 +162,10 @@ public final class BitstampAdapters {
         DateUtils.fromMillisUtc(
             tx.getDate()
                 * timeScale); // polled order books provide a timestamp in seconds, stream in ms
-    return new Trade.Builder()
+    return Trade.builder()
         .type(orderType)
         .originalAmount(tx.getAmount())
-        .currencyPair(currencyPair)
+        .instrument(currencyPair)
         .price(tx.getPrice())
         .timestamp(date)
         .id(tradeId)
@@ -233,20 +236,31 @@ public final class BitstampAdapters {
       final CurrencyPair pair =
           new CurrencyPair(t.getBaseCurrency().toUpperCase(), t.getCounterCurrency().toUpperCase());
       UserTrade trade =
-          new UserTrade.Builder()
+          UserTrade.builder()
               .type(orderType)
               .originalAmount(t.getBaseAmount().abs())
-              .currencyPair(pair)
+              .instrument(pair)
               .price(t.getPrice().abs())
               .timestamp(t.getDatetime())
               .id(Long.toString(tradeId))
               .orderId(Long.toString(t.getOrderId()))
-              .feeAmount(t.getFee())
+              .feeAmount(getFeeFromString(t.getFee()))
               .feeCurrency(Currency.getInstance(t.getFeeCurrency().toUpperCase()))
               .build();
       trades.add(trade);
     }
     return new UserTrades(trades, lastTradeId, TradeSortType.SortByID);
+  }
+
+  private static BigDecimal getFeeFromString(String value) {
+    if ("None".equals(value)) {
+      return BigDecimal.ZERO;
+    }
+    try {
+      return new BigDecimal(value);
+    } catch (NumberFormatException e) {
+      return BigDecimal.ZERO;
+    }
   }
 
   public static Map.Entry<String, BigDecimal> findNonzeroAmount(BitstampUserTransaction transaction)
@@ -283,26 +297,49 @@ public final class BitstampAdapters {
         }
 
         FundingRecord record =
-            new FundingRecord(
-                null,
-                trans.getDatetime(),
-                Currency.getInstance(amount.getKey()),
-                amount.getValue().abs(),
-                String.valueOf(trans.getId()),
-                null,
-                type,
-                FundingRecord.Status.COMPLETE,
-                null,
-                trans.getFee(),
-                null);
+            FundingRecord.builder()
+                .date(trans.getDatetime())
+                .currency(Currency.getInstance(amount.getKey()))
+                .amount(amount.getValue().abs())
+                .internalId(String.valueOf(trans.getId()))
+                .type(type)
+                .status(FundingRecord.Status.COMPLETE)
+                .fee(getFeeFromString(trans.getFee()))
+                .build();
         fundingRecords.add(record);
       }
     }
     return fundingRecords;
   }
 
+  public static Map<Instrument, Fee> adaptTradingFees(List<BitstampTradingFee> tradingFees) {
+    Map<Instrument, Fee> result = new HashMap<>();
+    if (tradingFees == null || tradingFees.isEmpty()) {
+      return result;
+    }
+
+    for (BitstampTradingFee tradingFee : tradingFees) {
+      String key = tradingFee.getCurrencyPair();
+      CurrencyPair currencyPair = new CurrencyPair(key);
+
+      if (tradingFee.getFees() == null || tradingFee.getFees().isEmpty()) {
+        throw new IllegalArgumentException(
+            "Trading fee is null or empty for currency pair: " + key);
+      }
+
+      BigDecimal maker = getFeeFromString(tradingFee.getFees().get(0).getMaker());
+      BigDecimal taker = getFeeFromString(tradingFee.getFees().get(0).getTaker());
+
+      Fee fee = new Fee(maker, taker);
+
+      result.put(currencyPair, fee);
+    }
+
+    return result;
+  }
+
   private static CurrencyPair adaptCurrencyPair(
-      BitstampOrderTransaction transaction, List<CurrencyPair> exchangeSymbols) {
+      BitstampOrderTransaction transaction, List<Instrument> exchangeSymbols) {
 
     String[] keys = transaction.getAmounts().keySet().toArray(new String[0]);
     if (keys.length != 2) {
@@ -321,7 +358,7 @@ public final class BitstampAdapters {
   private static BigDecimal getBaseCurrencyAmountFromBitstampTransaction(
       BitstampOrderTransaction bitstampTransaction, CurrencyPair currencyPair) {
 
-    return bitstampTransaction.getAmount(currencyPair.base.getCurrencyCode().toLowerCase());
+    return bitstampTransaction.getAmount(currencyPair.getBase().getCurrencyCode().toLowerCase());
   }
 
   public static Order.OrderStatus adaptOrderStatus(BitstampOrderStatus bitstampOrderStatus) {
@@ -348,7 +385,7 @@ public final class BitstampAdapters {
   public static BitstampGenericOrder adaptOrder(
       String orderId,
       BitstampOrderStatusResponse bitstampOrderStatusResponse,
-      List<CurrencyPair> exchangeSymbols) {
+      List<Instrument> exchangeSymbols) {
 
     BitstampOrderTransaction[] bitstampTransactions = bitstampOrderStatusResponse.getTransactions();
 
@@ -402,11 +439,10 @@ public final class BitstampAdapters {
     }
   }
 
-  public static Map<CurrencyPair, CurrencyPairMetaData> adaptCurrencyPairs(
+  public static Map<Instrument, InstrumentMetaData> adaptCurrencyPairs(
       Collection<BitstampPairInfo> bitstampPairInfo) {
 
-    Map<CurrencyPair, CurrencyPairMetaData> currencyPairs =
-        new HashMap<CurrencyPair, CurrencyPairMetaData>();
+    Map<Instrument, InstrumentMetaData> currencyPairs = new HashMap<>();
     for (BitstampPairInfo pairInfo : bitstampPairInfo) {
       String[] pairInfos = pairInfo.getName().split("/");
       currencyPairs.put(
@@ -415,40 +451,41 @@ public final class BitstampAdapters {
     return currencyPairs;
   }
 
-  public static CurrencyPairMetaData adaptCurrencyPairInfo(BitstampPairInfo pairInfo) {
+  public static InstrumentMetaData adaptCurrencyPairInfo(BitstampPairInfo pairInfo) {
 
     String[] minOrderParts = pairInfo.getMinimumOrder().split(" ");
     BigDecimal minOrder = new BigDecimal(minOrderParts[0]);
 
-    return new CurrencyPairMetaData.Builder()
+    return InstrumentMetaData.builder()
         .counterMinimumAmount(minOrder)
         .priceScale(pairInfo.getCounterDecimals())
-        .baseScale(pairInfo.getBaseDecimals())
+        .volumeScale(pairInfo.getBaseDecimals())
+        .marketOrderEnabled(pairInfo.isMarketOrdersEnabled())
         .build();
   }
 
   public static ExchangeMetaData adaptMetaData(
       List<BitstampPairInfo> rawSymbols, ExchangeMetaData metaData) {
 
-    Map<CurrencyPair, CurrencyPairMetaData> currencyPairs = adaptCurrencyPairs(rawSymbols);
+    Map<Instrument, InstrumentMetaData> currencyPairs = adaptCurrencyPairs(rawSymbols);
 
-    Map<CurrencyPair, CurrencyPairMetaData> pairsMap = metaData.getCurrencyPairs();
+    Map<Instrument, InstrumentMetaData> pairsMap = metaData.getInstruments();
     Map<Currency, CurrencyMetaData> currenciesMap = metaData.getCurrencies();
 
-    for (Map.Entry<CurrencyPair, CurrencyPairMetaData> entry : currencyPairs.entrySet()) {
-      CurrencyPair c = entry.getKey();
-      CurrencyPairMetaData cmeta = entry.getValue();
+    for (Map.Entry<Instrument, InstrumentMetaData> entry : currencyPairs.entrySet()) {
+      Instrument c = entry.getKey();
+      InstrumentMetaData cmeta = entry.getValue();
 
       if (!pairsMap.containsKey(c)) {
         pairsMap.put(c, cmeta);
       } else {
         pairsMap.replace(c, cmeta);
       }
-      if (!currenciesMap.containsKey(c.base)) {
-        currenciesMap.put(c.base, null);
+      if (!currenciesMap.containsKey(c.getBase())) {
+        currenciesMap.put(c.getBase(), null);
       }
-      if (!currenciesMap.containsKey(c.counter)) {
-        currenciesMap.put(c.counter, null);
+      if (!currenciesMap.containsKey(c.getCounter())) {
+        currenciesMap.put(c.getCounter(), null);
       }
     }
 

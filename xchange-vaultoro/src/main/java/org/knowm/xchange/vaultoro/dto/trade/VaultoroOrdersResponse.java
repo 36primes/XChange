@@ -10,10 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Generated;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({"status", "data"})
 public class VaultoroOrdersResponse {
 
@@ -26,28 +24,36 @@ public class VaultoroOrdersResponse {
 
   @JsonIgnore private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-  /** @return The status */
+  /**
+   * @return The status
+   */
   @JsonProperty("status")
   public String getStatus() {
 
     return status;
   }
 
-  /** @param status The status */
+  /**
+   * @param status The status
+   */
   @JsonProperty("status")
   public void setStatus(String status) {
 
     this.status = status;
   }
 
-  /** @return The data */
+  /**
+   * @return The data
+   */
   @JsonProperty("data")
   public List<Map<String, List<VaultoroOpenOrder>>> getData() {
 
     return data;
   }
 
-  /** @param data The data */
+  /**
+   * @param data The data
+   */
   @JsonProperty("data")
   public void setData(List<Map<String, List<VaultoroOpenOrder>>> data) {
 

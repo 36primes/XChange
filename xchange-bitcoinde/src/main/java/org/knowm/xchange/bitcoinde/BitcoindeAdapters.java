@@ -33,7 +33,9 @@ import org.knowm.xchange.dto.trade.OpenOrders;
 import org.knowm.xchange.utils.DateUtils;
 import org.knowm.xchange.utils.jackson.CurrencyPairDeserializer;
 
-/** @author matthewdowney & frank kaiser */
+/**
+ * @author matthewdowney & frank kaiser
+ */
 public final class BitcoindeAdapters {
 
   public static final Comparator<LimitOrder> ASK_COMPARATOR =
@@ -154,9 +156,9 @@ public final class BitcoindeAdapters {
         lastTradeId = tid;
       }
       trades.add(
-          new Trade.Builder()
+          Trade.builder()
               .originalAmount(bitcoindeTrade.getAmount())
-              .currencyPair(currencyPair)
+              .instrument(currencyPair)
               .price(bitcoindeTrade.getPrice())
               .timestamp(DateUtils.fromMillisUtc(bitcoindeTrade.getDate() * 1000L))
               .id(String.valueOf(tid))

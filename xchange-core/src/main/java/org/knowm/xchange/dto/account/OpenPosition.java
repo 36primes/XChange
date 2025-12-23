@@ -2,113 +2,54 @@ package org.knowm.xchange.dto.account;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Objects;
+import java.time.Instant;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.knowm.xchange.instrument.Instrument;
 
+@Data
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OpenPosition implements Serializable {
+
+  private String id;
+
   /** The instrument */
-  private final Instrument instrument;
+  private Instrument instrument;
+
   /** Is this a long or a short position */
-  private final Type type;
+  private Type type;
+
+  private MarginMode marginMode;
+
   /** The size of the position */
-  private final BigDecimal size;
-  /** The avarage entry price for the position */
-  private final BigDecimal price;
+  private BigDecimal size;
 
-  public OpenPosition(Instrument instrument, Type type, BigDecimal size, BigDecimal price) {
-    this.instrument = instrument;
-    this.type = type;
-    this.size = size;
-    this.price = price;
-  }
+  /** The average entry price for the position */
+  private BigDecimal price;
 
-  public Instrument getInstrument() {
-    return instrument;
-  }
+  /** The estimated liquidation price */
+  private BigDecimal liquidationPrice;
 
-  public Type getType() {
-    return type;
-  }
+  /** The unrealised pnl of the position */
+  private BigDecimal unRealisedPnl;
 
-  public BigDecimal getSize() {
-    return size;
-  }
+  /** Timestamp of creation */
+  private Instant createdAt;
 
-  public BigDecimal getPrice() {
-    return price;
-  }
-
-  @Override
-  public boolean equals(final Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    final OpenPosition that = (OpenPosition) o;
-    return Objects.equals(instrument, that.instrument)
-        && type == that.type
-        && Objects.equals(size, that.size)
-        && Objects.equals(price, that.price);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(instrument, type, size, price);
-  }
-
-  @Override
-  public String toString() {
-    return "OpenPosition{"
-        + "instrument="
-        + instrument
-        + ", type="
-        + type
-        + ", size="
-        + size
-        + ", price="
-        + price
-        + '}';
-  }
+  /** Timestamp of update */
+  private Instant updatedAt;
 
   public enum Type {
     LONG,
-    SHORT;
+    SHORT
   }
 
-  public static class Builder {
-    private Instrument instrument;
-    private Type type;
-    private BigDecimal size;
-    private BigDecimal price;
-
-    public static Builder from(OpenPosition openPosition) {
-      return new Builder()
-          .instrument(openPosition.getInstrument())
-          .type(openPosition.getType())
-          .size(openPosition.getSize())
-          .price(openPosition.getPrice());
-    }
-
-    public Builder instrument(final Instrument instrument) {
-      this.instrument = instrument;
-      return this;
-    }
-
-    public Builder type(final Type type) {
-      this.type = type;
-      return this;
-    }
-
-    public Builder size(final BigDecimal size) {
-      this.size = size;
-      return this;
-    }
-
-    public Builder price(final BigDecimal price) {
-      this.price = price;
-      return this;
-    }
-
-    public OpenPosition build() {
-      return new OpenPosition(instrument, type, size, price);
-    }
+  public enum MarginMode {
+    CROSS,
+    ISOLATED
   }
 }

@@ -6,31 +6,22 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.reactivex.Observable;
-import io.reactivex.observers.TestObserver;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.observers.TestObserver;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.junit.Before;
 import org.junit.Test;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.trade.LimitOrder;
-import org.mockito.MockitoAnnotations;
 
 public class CoinmateStreamingMarketDataServiceTest {
-
-  private CoinmateStreamingMarketDataService marketDataService;
-
-  @Before
-  public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
-  }
 
   @Test
   public void testGetOrderBook() throws Exception {
@@ -125,20 +116,20 @@ public class CoinmateStreamingMarketDataServiceTest {
         new CoinmateStreamingMarketDataService(mockService);
 
     Trade expected1 =
-        new Trade.Builder()
+        Trade.builder()
             .type(null)
             .originalAmount(new BigDecimal("0.08233888"))
-            .currencyPair(CurrencyPair.BTC_CZK)
+            .instrument(CurrencyPair.BTC_CZK)
             .price(new BigDecimal("855.29"))
             .timestamp(new Date(1484863030522L))
             .type(Order.OrderType.BID)
             .build();
 
     Trade expected2 =
-        new Trade.Builder()
+        Trade.builder()
             .type(null)
             .originalAmount(new BigDecimal("0.00200428"))
-            .currencyPair(CurrencyPair.BTC_CZK)
+            .instrument(CurrencyPair.BTC_CZK)
             .price(new BigDecimal("855.13"))
             .timestamp(new Date(1484863028887L))
             .type(Order.OrderType.ASK)
@@ -150,9 +141,9 @@ public class CoinmateStreamingMarketDataServiceTest {
         0,
         trade1 -> {
           assertThat(trade1.getId()).as("Id").isEqualTo(expected1.getId());
-          assertThat(trade1.getCurrencyPair())
+          assertThat(trade1.getInstrument())
               .as("Currency pair")
-              .isEqualTo(expected1.getCurrencyPair());
+              .isEqualTo(expected1.getInstrument());
           assertThat(trade1.getPrice()).as("Price").isEqualTo(expected1.getPrice());
           assertThat(trade1.getTimestamp()).as("Timestamp").isEqualTo(expected1.getTimestamp());
           assertThat(trade1.getOriginalAmount())
@@ -166,9 +157,9 @@ public class CoinmateStreamingMarketDataServiceTest {
         1,
         trade1 -> {
           assertThat(trade1.getId()).as("Id").isEqualTo(expected2.getId());
-          assertThat(trade1.getCurrencyPair())
+          assertThat(trade1.getInstrument())
               .as("Currency pair")
-              .isEqualTo(expected2.getCurrencyPair());
+              .isEqualTo(expected2.getInstrument());
           assertThat(trade1.getPrice()).as("Price").isEqualTo(expected2.getPrice());
           assertThat(trade1.getTimestamp()).as("Timestamp").isEqualTo(expected2.getTimestamp());
           assertThat(trade1.getOriginalAmount())

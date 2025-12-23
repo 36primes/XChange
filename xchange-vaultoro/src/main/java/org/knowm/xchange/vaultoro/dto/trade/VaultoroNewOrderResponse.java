@@ -8,10 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Generated;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({"status", "data"})
 public class VaultoroNewOrderResponse {
 
@@ -23,28 +21,36 @@ public class VaultoroNewOrderResponse {
 
   @JsonIgnore private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-  /** @return The status */
+  /**
+   * @return The status
+   */
   @JsonProperty("status")
   public String getStatus() {
 
     return status;
   }
 
-  /** @param status The status */
+  /**
+   * @param status The status
+   */
   @JsonProperty("status")
   public void setStatus(String status) {
 
     this.status = status;
   }
 
-  /** @return The data */
+  /**
+   * @return The data
+   */
   @JsonProperty("data")
   public VaultoroNewOrderData getData() {
 
     return data;
   }
 
-  /** @param data The data */
+  /**
+   * @param data The data
+   */
   @JsonProperty("data")
   public void setData(VaultoroNewOrderData data) {
 

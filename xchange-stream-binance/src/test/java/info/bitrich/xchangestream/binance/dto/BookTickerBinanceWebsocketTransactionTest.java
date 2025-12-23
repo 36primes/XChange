@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import info.bitrich.xchangestream.binance.dto.market.BookTickerBinanceWebSocketTransaction;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -38,8 +39,8 @@ public class BookTickerBinanceWebsocketTransactionTest {
     assertThat(tickerTransaction.eventType).isEqualTo(BOOK_TICKER);
     assertThat(tickerTransaction.getEventTime().getTime())
         .isLessThanOrEqualTo(new Date().getTime());
-    assertThat(tickerTransaction.getCurrencyPair())
-        .isEqualTo(BinanceAdapters.adaptSymbol("BNBUSDT"));
+    assertThat(BinanceAdapters.adaptSymbol(tickerTransaction.getTicker().getSymbol(), false))
+        .isEqualTo(BinanceAdapters.adaptSymbol("BNBUSDT", false));
 
     BinanceBookTicker ticker = tickerTransaction.getTicker();
     assertThat(ticker.getUpdateId()).isEqualTo(400900217);

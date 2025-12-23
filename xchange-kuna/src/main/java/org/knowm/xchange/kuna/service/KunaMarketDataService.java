@@ -21,7 +21,9 @@ import org.knowm.xchange.kuna.dto.KunaTrade;
 import org.knowm.xchange.kuna.dto.enums.KunaOrderType;
 import org.knowm.xchange.service.marketdata.MarketDataService;
 
-/** @author Dat Bui */
+/**
+ * @author Dat Bui
+ */
 public class KunaMarketDataService extends KunaMarketDataServiceRaw implements MarketDataService {
 
   /**
@@ -102,13 +104,12 @@ public class KunaMarketDataService extends KunaMarketDataServiceRaw implements M
   }
 
   protected Trade mapKunaTrade2Trade(KunaTrade kunaTrade, CurrencyPair currencyPair) {
-    Trade.Builder builder =
-        new Trade.Builder()
-            .currencyPair(currencyPair)
-            .id(String.valueOf(kunaTrade.getId()))
-            .price(kunaTrade.getPrice())
-            .timestamp(kunaTrade.getCreatedAt())
-            .originalAmount(kunaTrade.getVolume());
-    return builder.build();
+    return Trade.builder()
+        .instrument(currencyPair)
+        .id(String.valueOf(kunaTrade.getId()))
+        .price(kunaTrade.getPrice())
+        .timestamp(kunaTrade.getCreatedAt())
+        .originalAmount(kunaTrade.getVolume())
+        .build();
   }
 }

@@ -31,10 +31,11 @@ public class CoinjarAdapters {
 
   public static String currencyPairToProduct(CurrencyPair pair) {
     String sep = "";
-    if (pair.base.getCurrencyCode().length() > 3 || pair.counter.getCurrencyCode().length() > 3) {
+    if (pair.getBase().getCurrencyCode().length() > 3
+        || pair.getCounter().getCurrencyCode().length() > 3) {
       sep = "-";
     }
-    return pair.base.getCurrencyCode() + sep + pair.counter.getCurrencyCode();
+    return pair.getBase().getCurrencyCode() + sep + pair.getCounter().getCurrencyCode();
   }
 
   public static CurrencyPair productToCurrencyPair(String product) {
@@ -130,10 +131,10 @@ public class CoinjarAdapters {
   }
 
   public static UserTrade adaptOrderToUserTrade(CoinjarOrder order) {
-    return new UserTrade.Builder()
+    return UserTrade.builder()
         .id(order.oid.toString())
         .orderId(order.oid.toString())
-        .currencyPair(productToCurrencyPair(order.productId))
+        .instrument(productToCurrencyPair(order.productId))
         .type(buySellToOrderType(order.orderSide))
         .price(new BigDecimal(order.price))
         .originalAmount(new BigDecimal(order.size))
@@ -165,10 +166,10 @@ public class CoinjarAdapters {
   }
 
   public static UserTrade adaptFillToUserTrade(CoinjarFill coinjarFill) {
-    return new UserTrade.Builder()
+    return UserTrade.builder()
         .id(coinjarFill.tid.toString())
         .orderId(coinjarFill.oid.toString())
-        .currencyPair(productToCurrencyPair(coinjarFill.productId))
+        .instrument(productToCurrencyPair(coinjarFill.productId))
         .type(buySellToOrderType(coinjarFill.side))
         .price(new BigDecimal(coinjarFill.price))
         .originalAmount(new BigDecimal(coinjarFill.size))

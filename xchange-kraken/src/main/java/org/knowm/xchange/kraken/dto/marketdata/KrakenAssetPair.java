@@ -3,16 +3,13 @@ package org.knowm.xchange.kraken.dto.marketdata;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.util.List;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
-@NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Jacksonized
 public class KrakenAssetPair {
 
   @JsonProperty("altname")
@@ -42,6 +39,9 @@ public class KrakenAssetPair {
 
   @JsonProperty("lot_multiplier")
   BigDecimal volumeMultiplier;
+
+  @JsonProperty("tick_size")
+  BigDecimal tickSize;
 
   List<String> leverage_buy;
   List<String> leverage_sell;

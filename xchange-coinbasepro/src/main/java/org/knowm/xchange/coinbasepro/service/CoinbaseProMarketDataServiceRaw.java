@@ -18,6 +18,7 @@ import org.knowm.xchange.coinbasepro.dto.marketdata.CoinbaseProStats;
 import org.knowm.xchange.coinbasepro.dto.marketdata.CoinbaseProTrade;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.exceptions.InstrumentNotValidException;
+import org.knowm.xchange.instrument.Instrument;
 
 public class CoinbaseProMarketDataServiceRaw extends CoinbaseProBaseService {
 
@@ -37,7 +38,8 @@ public class CoinbaseProMarketDataServiceRaw extends CoinbaseProBaseService {
       return decorateApiCall(
               () ->
                   coinbasePro.getProductTicker(
-                      currencyPair.base.getCurrencyCode(), currencyPair.counter.getCurrencyCode()))
+                      currencyPair.getBase().getCurrencyCode(),
+                      currencyPair.getCounter().getCurrencyCode()))
           .withRateLimiter(rateLimiter(PUBLIC_REST_ENDPOINT_RATE_LIMITER))
           .call();
     } catch (CoinbaseProException e) {
@@ -56,7 +58,8 @@ public class CoinbaseProMarketDataServiceRaw extends CoinbaseProBaseService {
       return decorateApiCall(
               () ->
                   coinbasePro.getProductStats(
-                      currencyPair.base.getCurrencyCode(), currencyPair.counter.getCurrencyCode()))
+                      currencyPair.getBase().getCurrencyCode(),
+                      currencyPair.getCounter().getCurrencyCode()))
           .withRateLimiter(rateLimiter(PUBLIC_REST_ENDPOINT_RATE_LIMITER))
           .call();
     } catch (CoinbaseProException e) {
@@ -82,8 +85,8 @@ public class CoinbaseProMarketDataServiceRaw extends CoinbaseProBaseService {
       return decorateApiCall(
               () ->
                   coinbasePro.getProductOrderBook(
-                      currencyPair.base.getCurrencyCode(),
-                      currencyPair.counter.getCurrencyCode(),
+                      currencyPair.getBase().getCurrencyCode(),
+                      currencyPair.getCounter().getCurrencyCode(),
                       String.valueOf(level)))
           .withRateLimiter(rateLimiter(PUBLIC_REST_ENDPOINT_RATE_LIMITER))
           .call();
@@ -98,7 +101,8 @@ public class CoinbaseProMarketDataServiceRaw extends CoinbaseProBaseService {
       return decorateApiCall(
               () ->
                   coinbasePro.getTrades(
-                      currencyPair.base.getCurrencyCode(), currencyPair.counter.getCurrencyCode()))
+                      currencyPair.getBase().getCurrencyCode(),
+                      currencyPair.getCounter().getCurrencyCode()))
           .withRateLimiter(rateLimiter(PUBLIC_REST_ENDPOINT_RATE_LIMITER))
           .call();
     } catch (CoinbaseProException e) {
@@ -114,8 +118,8 @@ public class CoinbaseProMarketDataServiceRaw extends CoinbaseProBaseService {
       return decorateApiCall(
               () ->
                   coinbasePro.getHistoricalCandles(
-                      currencyPair.base.getCurrencyCode(),
-                      currencyPair.counter.getCurrencyCode(),
+                      currencyPair.getBase().getCurrencyCode(),
+                      currencyPair.getCounter().getCurrencyCode(),
                       start,
                       end,
                       granularity))
@@ -154,21 +158,21 @@ public class CoinbaseProMarketDataServiceRaw extends CoinbaseProBaseService {
     return decorateApiCall(
             () ->
                 coinbasePro.getTradesPageable(
-                    currencyPair.base.getCurrencyCode(),
-                    currencyPair.counter.getCurrencyCode(),
+                    currencyPair.getBase().getCurrencyCode(),
+                    currencyPair.getCounter().getCurrencyCode(),
                     after,
                     limit))
         .withRateLimiter(rateLimiter(PUBLIC_REST_ENDPOINT_RATE_LIMITER))
         .call();
   }
 
-  public boolean checkProductExists(CurrencyPair currencyPair) {
+  public boolean checkProductExists(Instrument currencyPair) {
 
-    for (CurrencyPair cp : exchange.getExchangeSymbols()) {
-      if (cp.base.getCurrencyCode().equalsIgnoreCase(currencyPair.base.getCurrencyCode())
-          && cp.counter
+    for (Instrument cp : exchange.getExchangeInstruments()) {
+      if (cp.getBase().getCurrencyCode().equalsIgnoreCase(currencyPair.getBase().getCurrencyCode())
+          && cp.getCounter()
               .getCurrencyCode()
-              .equalsIgnoreCase(currencyPair.counter.getCurrencyCode())) {
+              .equalsIgnoreCase(currencyPair.getCounter().getCurrencyCode())) {
         return true;
       }
     }

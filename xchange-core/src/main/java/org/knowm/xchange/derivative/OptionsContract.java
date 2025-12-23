@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Objects;
+import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.instrument.Instrument;
 
@@ -154,12 +155,22 @@ public class OptionsContract extends Instrument
     }
   }
 
+  @Override
+  public Currency getBase() {
+    return currencyPair.getBase();
+  }
+
+  @Override
+  public Currency getCounter() {
+    return currencyPair.getCounter();
+  }
+
   @JsonValue
   @Override
   public String toString() {
-    return currencyPair.base
+    return currencyPair.getBase()
         + "/"
-        + currencyPair.counter
+        + currencyPair.getCounter()
         + "/"
         + DATE_PARSER.get().format(this.expireDate)
         + "/"

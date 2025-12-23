@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.currency.Currency;
-import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.account.AccountInfo;
 import org.knowm.xchange.dto.account.Fee;
 import org.knowm.xchange.dto.account.FundingRecord;
@@ -17,12 +16,9 @@ import org.knowm.xchange.gemini.v1.GeminiAdapters;
 import org.knowm.xchange.gemini.v1.dto.account.GeminiDepositAddressResponse;
 import org.knowm.xchange.gemini.v1.dto.account.GeminiTrailingVolumeResponse;
 import org.knowm.xchange.gemini.v1.dto.account.GeminiTransfer;
+import org.knowm.xchange.instrument.Instrument;
 import org.knowm.xchange.service.account.AccountService;
-import org.knowm.xchange.service.trade.params.DefaultWithdrawFundsParams;
-import org.knowm.xchange.service.trade.params.TradeHistoryParamLimit;
-import org.knowm.xchange.service.trade.params.TradeHistoryParams;
-import org.knowm.xchange.service.trade.params.TradeHistoryParamsTimeSpan;
-import org.knowm.xchange.service.trade.params.WithdrawFundsParams;
+import org.knowm.xchange.service.trade.params.*;
 
 public class GeminiAccountService extends GeminiAccountServiceRaw implements AccountService {
 
@@ -102,7 +98,8 @@ public class GeminiAccountService extends GeminiAccountServiceRaw implements Acc
   }
 
   @Override
-  public Map<CurrencyPair, Fee> getDynamicTradingFees() throws IOException {
+  public Map<Instrument, Fee> getDynamicTradingFeesByInstrument(String... category)
+      throws IOException {
     GeminiTrailingVolumeResponse volumes = Get30DayTrailingVolumeDescription();
     return GeminiAdapters.AdaptDynamicTradingFees(volumes, allCurrencyPairs);
   }

@@ -6,12 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.knowm.xchange.Exchange;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.gateio.GateioAdapters;
+import org.knowm.xchange.gateio.GateioExchange;
 import org.knowm.xchange.gateio.dto.marketdata.GateioDepth;
 import org.knowm.xchange.gateio.dto.marketdata.GateioTicker;
 import org.knowm.xchange.gateio.dto.marketdata.GateioTradeHistory;
@@ -27,7 +27,7 @@ public class GateioMarketDataService extends GateioMarketDataServiceRaw
    *
    * @param exchange
    */
-  public GateioMarketDataService(Exchange exchange) {
+  public GateioMarketDataService(GateioExchange exchange) {
 
     super(exchange);
   }
@@ -37,7 +37,7 @@ public class GateioMarketDataService extends GateioMarketDataServiceRaw
 
     GateioTicker ticker =
         super.getBTERTicker(
-            currencyPair.base.getCurrencyCode(), currencyPair.counter.getCurrencyCode());
+            currencyPair.getBase().getCurrencyCode(), currencyPair.getCounter().getCurrencyCode());
 
     return GateioAdapters.adaptTicker(currencyPair, ticker);
   }
@@ -59,7 +59,7 @@ public class GateioMarketDataService extends GateioMarketDataServiceRaw
 
     GateioDepth gateioDepth =
         super.getBTEROrderBook(
-            currencyPair.base.getCurrencyCode(), currencyPair.counter.getCurrencyCode());
+            currencyPair.getBase().getCurrencyCode(), currencyPair.getCounter().getCurrencyCode());
 
     return GateioAdapters.adaptOrderBook(gateioDepth, currencyPair);
   }
@@ -84,11 +84,12 @@ public class GateioMarketDataService extends GateioMarketDataServiceRaw
     GateioTradeHistory tradeHistory =
         (args != null && args.length > 0 && args[0] != null && args[0] instanceof String)
             ? super.getBTERTradeHistorySince(
-                currencyPair.base.getCurrencyCode(),
-                currencyPair.counter.getCurrencyCode(),
+                currencyPair.getBase().getCurrencyCode(),
+                currencyPair.getCounter().getCurrencyCode(),
                 (String) args[0])
             : super.getBTERTradeHistory(
-                currencyPair.base.getCurrencyCode(), currencyPair.counter.getCurrencyCode());
+                currencyPair.getBase().getCurrencyCode(),
+                currencyPair.getCounter().getCurrencyCode());
 
     return GateioAdapters.adaptTrades(tradeHistory, currencyPair);
   }

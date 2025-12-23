@@ -99,25 +99,24 @@ public class LunoAccountService extends LunoBaseService implements AccountServic
 
   @Override
   public List<FundingRecord> getFundingHistory(TradeHistoryParams params)
-      throws ExchangeException, NotAvailableFromExchangeException,
-          NotYetImplementedForExchangeException, IOException {
+      throws ExchangeException,
+          NotAvailableFromExchangeException,
+          NotYetImplementedForExchangeException,
+          IOException {
     // currently no support for deposits!
 
     List<FundingRecord> result = new ArrayList<>();
     for (Withdrawal w : lunoAPI.withdrawals().getWithdrawals()) {
       result.add(
-          new FundingRecord(
-              null,
-              w.getCreatedAt(),
-              LunoUtil.fromLunoCurrency(w.currency),
-              w.amount,
-              w.id,
-              null,
-              Type.WITHDRAWAL,
-              convert(w.status),
-              null,
-              w.fee,
-              null));
+          FundingRecord.builder()
+              .date(w.getCreatedAt())
+              .currency(LunoUtil.fromLunoCurrency(w.currency))
+              .amount(w.amount)
+              .internalId(w.id)
+              .type(Type.WITHDRAWAL)
+              .status(convert(w.status))
+              .fee(w.fee)
+              .build());
     }
     return result;
   }

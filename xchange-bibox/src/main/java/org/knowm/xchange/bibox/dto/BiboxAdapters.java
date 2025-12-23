@@ -30,20 +30,23 @@ import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.marketdata.Trades.TradeSortType;
-import org.knowm.xchange.dto.meta.CurrencyPairMetaData;
 import org.knowm.xchange.dto.meta.ExchangeMetaData;
+import org.knowm.xchange.dto.meta.InstrumentMetaData;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.OpenOrders;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.dto.trade.UserTrades;
+import org.knowm.xchange.instrument.Instrument;
 import org.knowm.xchange.utils.DateUtils;
 
-/** @author odrotleff */
+/**
+ * @author odrotleff
+ */
 public class BiboxAdapters {
 
-  public static String toBiboxPair(CurrencyPair pair) {
+  public static String toBiboxPair(Instrument pair) {
 
-    return pair.base.getCurrencyCode() + "_" + pair.counter.getCurrencyCode();
+    return pair.getBase().getCurrencyCode() + "_" + pair.getCounter().getCurrencyCode();
   }
 
   private static CurrencyPair adaptCurrencyPair(String biboxPair) {
@@ -125,11 +128,11 @@ public class BiboxAdapters {
   }
 
   public static ExchangeMetaData adaptMetadata(List<BiboxMarket> markets) {
-    Map<CurrencyPair, CurrencyPairMetaData> pairMeta = new HashMap<>();
+    Map<Instrument, InstrumentMetaData> pairMeta = new HashMap<>();
     for (BiboxMarket biboxMarket : markets) {
       pairMeta.put(
           new CurrencyPair(biboxMarket.getCoinSymbol(), biboxMarket.getCurrencySymbol()),
-          new CurrencyPairMetaData(null, null, null, null, null));
+          InstrumentMetaData.builder().build());
     }
     return new ExchangeMetaData(pairMeta, null, null, null, null);
   }
@@ -143,10 +146,10 @@ public class BiboxAdapters {
   }
 
   private static UserTrade adaptUserTrade(BiboxOrder order) {
-    return new UserTrade.Builder()
+    return UserTrade.builder()
         .orderId(order.getId())
         .id(order.getId())
-        .currencyPair(new CurrencyPair(order.getCoinSymbol(), order.getCurrencySymbol()))
+        .instrument(new CurrencyPair(order.getCoinSymbol(), order.getCurrencySymbol()))
         .price(order.getPrice())
         .originalAmount(order.getAmount())
         .timestamp(new Date(order.getCreatedAt()))
@@ -171,33 +174,25 @@ public class BiboxAdapters {
   }
 
   public static FundingRecord adaptDeposit(BiboxDeposit d) {
-    return new FundingRecord(
-        d.to,
-        d.getCreatedAt(),
-        Currency.getInstance(d.coinSymbol),
-        d.amount,
-        null,
-        null,
-        Type.DEPOSIT,
-        convertStatus(d.status),
-        null,
-        null,
-        null);
+    return FundingRecord.builder()
+        .address(d.to)
+        .date(d.getCreatedAt())
+        .currency(Currency.getInstance(d.coinSymbol))
+        .amount(d.amount)
+        .type(Type.DEPOSIT)
+        .status(convertStatus(d.status))
+        .build();
   }
 
   public static FundingRecord adaptDeposit(BiboxWithdrawal w) {
-    return new FundingRecord(
-        w.toAddress,
-        w.getCreatedAt(),
-        Currency.getInstance(w.coinSymbol),
-        w.amountReal,
-        null,
-        null,
-        Type.WITHDRAWAL,
-        convertStatus(w.status),
-        null,
-        null,
-        null);
+    return FundingRecord.builder()
+        .address(w.toAddress)
+        .date(w.getCreatedAt())
+        .currency(Currency.getInstance(w.coinSymbol))
+        .amount(w.amountReal)
+        .type(Type.WITHDRAWAL)
+        .status(convertStatus(w.status))
+        .build();
   }
 
   public static Status convertStatus(int status) {
@@ -218,10 +213,10 @@ public class BiboxAdapters {
         biboxDeals.stream()
             .map(
                 d ->
-                    new Trade.Builder()
+                    Trade.builder()
                         .type(convertSide(d.getSide()))
                         .originalAmount(d.getAmount())
-                        .currencyPair(currencyPair)
+                        .instrument(currencyPair)
                         .price(d.getPrice())
                         .timestamp(new Date(d.getTime()))
                         .id(d.getId())
@@ -229,6 +224,7 @@ public class BiboxAdapters {
             .collect(Collectors.toList());
     return new Trades(trades, TradeSortType.SortByTimestamp);
   }
+
   /**
    * transaction side，1-bid，2-ask
    *

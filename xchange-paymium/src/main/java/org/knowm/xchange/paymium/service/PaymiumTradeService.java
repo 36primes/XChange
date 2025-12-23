@@ -71,10 +71,10 @@ public class PaymiumTradeService extends PaymiumTradeServiceRaw implements Trade
       }
 
       UserTrade userTrade =
-          new UserTrade.Builder()
+          UserTrade.builder()
               .type(orderType)
               .originalAmount(order.getTradedCurrency())
-              .currencyPair(CurrencyPair.BTC_EUR)
+              .instrument(CurrencyPair.BTC_EUR)
               .price(order.getPrice())
               .id(order.getUuid())
               .orderId(order.getUuid())

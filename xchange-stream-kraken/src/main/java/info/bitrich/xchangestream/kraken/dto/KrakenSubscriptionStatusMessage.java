@@ -5,20 +5,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import info.bitrich.xchangestream.kraken.dto.enums.KrakenEventType;
 import info.bitrich.xchangestream.kraken.dto.enums.KrakenSubscriptionStatus;
 
-/** @author pchertalev */
+/**
+ * @author pchertalev
+ */
 public class KrakenSubscriptionStatusMessage extends KrakenEvent {
 
-  private final Integer channelID;
+  private final Long channelID;
   private final Integer reqid;
   private final KrakenSubscriptionStatus status;
   private final String pair;
   private final KrakenSubscriptionConfig krakenSubscriptionConfig;
   private final String errorMessage;
+  private String channelName;
 
   @JsonCreator
   public KrakenSubscriptionStatusMessage(
       @JsonProperty("event") KrakenEventType event,
-      @JsonProperty("channelID") Integer channelID,
+      @JsonProperty("channelID") Long channelID,
       @JsonProperty("reqid") Integer reqid,
       @JsonProperty("status") KrakenSubscriptionStatus status,
       @JsonProperty("pair") String pair,
@@ -33,7 +36,7 @@ public class KrakenSubscriptionStatusMessage extends KrakenEvent {
     this.errorMessage = errorMessage;
   }
 
-  public Integer getChannelID() {
+  public Long getChannelID() {
     return channelID;
   }
 
@@ -55,5 +58,13 @@ public class KrakenSubscriptionStatusMessage extends KrakenEvent {
 
   public String getErrorMessage() {
     return errorMessage;
+  }
+
+  public String getChannelName() {
+    return channelName;
+  }
+
+  public void setChannelName(String channelName) {
+    this.channelName = channelName;
   }
 }

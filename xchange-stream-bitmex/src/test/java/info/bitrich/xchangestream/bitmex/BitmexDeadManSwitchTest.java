@@ -4,8 +4,9 @@ import static org.knowm.xchange.bitmex.BitmexPrompt.PERPETUAL;
 
 import info.bitrich.xchangestream.core.StreamingExchange;
 import java.math.BigDecimal;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.bitmex.service.BitmexMarketDataService;
@@ -18,12 +19,14 @@ import org.knowm.xchange.utils.CertHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** @author Nikita Belenkiy on 18/05/2018. */
+/**
+ * @author Nikita Belenkiy on 18/05/2018.
+ */
 public class BitmexDeadManSwitchTest {
   private static final Logger logger = LoggerFactory.getLogger(BitmexDeadManSwitchTest.class);
 
   @Test
-  @Ignore
+  @Disabled
   public void testDeadmanSwitch() throws Exception {
     CertHelper.trustAllCerts();
     BitmexStreamingExchange exchange =
@@ -31,7 +34,7 @@ public class BitmexDeadManSwitchTest {
             ExchangeFactory.INSTANCE.createExchange(BitmexStreamingExchange.class);
     ExchangeSpecification defaultExchangeSpecification = exchange.getDefaultExchangeSpecification();
 
-    defaultExchangeSpecification.setExchangeSpecificParametersItem("Use_Sandbox", true);
+    defaultExchangeSpecification.setExchangeSpecificParametersItem(Exchange.USE_SANDBOX, true);
 
     defaultExchangeSpecification.setApiKey("QW8Ao_gx38e-8KFvDkFn-Ym4");
     defaultExchangeSpecification.setSecretKey("tn7rpzvOXSKThZD0f-xXehtydt4OTHZVf42gCCyxPixiiVOb");
@@ -64,8 +67,8 @@ public class BitmexDeadManSwitchTest {
     //        streamingMarketDataService.authenticate();
     CurrencyPair xbtUsd =
         exchange.determineActiveContract(
-            CurrencyPair.XBT_USD.base.toString(),
-            CurrencyPair.XBT_USD.counter.toString(),
+            CurrencyPair.XBT_USD.getBase().toString(),
+            CurrencyPair.XBT_USD.getCounter().toString(),
             PERPETUAL);
 
     streamingMarketDataService
@@ -81,7 +84,7 @@ public class BitmexDeadManSwitchTest {
     //    OrderBook orderBook = marketDataService.getOrderBook(new CurrencyPair(Currency.BTC,
     // Currency.USD), BitmexPrompt.BIQUARTERLY);
 
-    System.out.println("orderBook = " + orderBook);
+    //    System.out.println("orderBook = " + orderBook);
 
     streamingMarketDataService.enableDeadManSwitch(10000, 30000);
 
@@ -98,8 +101,8 @@ public class BitmexDeadManSwitchTest {
     String xbtusd = tradeService.placeLimitOrder(limitOrder);
     logger.info("!!!!!PRIVATE_ORDER!!!! {}", xbtusd);
     Thread.sleep(100000);
-    System.out.println();
-    System.out.println();
+    //    System.out.println();
+    //    System.out.println();
 
     exchange.disconnect();
   }

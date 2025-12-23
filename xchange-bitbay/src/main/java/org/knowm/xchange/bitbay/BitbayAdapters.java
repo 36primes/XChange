@@ -29,7 +29,9 @@ import org.knowm.xchange.dto.trade.OpenOrders;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.dto.trade.UserTrades;
 
-/** @author kpysniak */
+/**
+ * @author kpysniak
+ */
 public class BitbayAdapters {
 
   /** Singleton */
@@ -112,9 +114,9 @@ public class BitbayAdapters {
     for (BitbayTrade bitbayTrade : bitbayTrades) {
 
       Trade trade =
-          new Trade.Builder()
+          Trade.builder()
               .originalAmount(bitbayTrade.getAmount())
-              .currencyPair(currencyPair)
+              .instrument(currencyPair)
               .price(bitbayTrade.getPrice())
               .timestamp(new Date(bitbayTrade.getDate() * 1000))
               .id(bitbayTrade.getTid())
@@ -206,10 +208,10 @@ public class BitbayAdapters {
       throw new IllegalArgumentException(e);
     }
 
-    return new UserTrade.Builder()
+    return UserTrade.builder()
         .type(type)
         .originalAmount(bitbayOrder.getAmount())
-        .currencyPair(currencyPair)
+        .instrument(currencyPair)
         .price(bitbayOrder.getCurrentPrice().divide(bitbayOrder.getStartAmount()))
         .timestamp(date)
         .id(String.valueOf(bitbayOrder.getId()))
@@ -244,10 +246,10 @@ public class BitbayAdapters {
         String id = (type + "_" + date + "_" + market).replaceAll("\\s+", "");
 
         trades.add(
-            new UserTrade.Builder()
+            UserTrade.builder()
                 .type(orderType)
                 .originalAmount(amount)
-                .currencyPair(pair)
+                .instrument(pair)
                 .price(price)
                 .timestamp(timestamp)
                 .build());

@@ -3,7 +3,7 @@
 [![Discord](https://img.shields.io/discord/778301671302365256?logo=Discord)](https://discord.gg/n27zjVTbDz)
 [![Java CI with Maven on Push](https://github.com/knowm/XChange/actions/workflows/maven.yml/badge.svg?event=status)](https://github.com/knowm/XChange/actions/workflows/maven.yml)
 
-XChange is a Java library providing a simple and consistent API for interacting with 60+ Bitcoin and other crypto currency exchanges, providing a consistent interface for trading and accessing market data.
+XChange is a Java library providing a simple and consistent API for interacting with 60+ Bitcoin and other cryptocurrency exchanges, providing a consistent interface for trading and accessing market data.
 
 ## Important!
 
@@ -11,9 +11,23 @@ The world of Bitcoin changes quickly and XChange is no exception. For the latest
 
 ## Description
 
-XChange is a Java based library providing a simple and consistent API for interacting with a diverse set of crypto currency exchanges.
+XChange is a Java based library providing a simple and consistent API for interacting with a diverse set of cryptocurrency exchanges.
 
 Basic usage is very simple: Create an `Exchange` instance, get the appropriate service, and request data. More complex usages are progressively detailed below.
+
+## Integration status
+
+| Exchange         | Status                                                                                                                                                                 |
+|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| bitfinex         | [![status](https://github.com/knowm/XChange/actions/workflows/bitfinex.yaml/badge.svg)](https://github.com/knowm/XChange/actions/workflows/bitfinex.yml)               |
+| bitget           | [![status](https://github.com/knowm/XChange/actions/workflows/bitget.yaml/badge.svg)](https://github.com/knowm/XChange/actions/workflows/bitget.yml)                   |
+| bitmex           | [![status](https://github.com/knowm/XChange/actions/workflows/bitmex.yaml/badge.svg)](https://github.com/knowm/XChange/actions/workflows/bitmex.yaml)                  |
+| coinex           | [![status](https://github.com/knowm/XChange/actions/workflows/coinex.yaml/badge.svg)](https://github.com/knowm/XChange/actions/workflows/coinex.yaml)                  |
+| gate.io          | [![status](https://github.com/knowm/XChange/actions/workflows/gateio-v4.yaml/badge.svg)](https://github.com/knowm/XChange/actions/workflows/gateio-v4.yaml)            |
+| kraken           | [![status](https://github.com/knowm/XChange/actions/workflows/kraken.yaml/badge.svg)](https://github.com/knowm/XChange/actions/workflows/kraken.yaml)                  |
+| mexc             | [![status](https://github.com/knowm/XChange/actions/workflows/mexc.yaml/badge.svg)](https://github.com/knowm/XChange/actions/workflows/mexc.yaml)                      |
+| stream-bitfinex  | [![status](https://github.com/knowm/XChange/actions/workflows/stream-bitfinex.yaml/badge.svg)](https://github.com/knowm/XChange/actions/workflows/stream-bitfinex.yml) |
+| stream-kraken-v2 | [![status](https://github.com/knowm/XChange/actions/workflows/stream-kraken-v2.yaml/badge.svg)](https://github.com/knowm/XChange/actions/workflows/stream-kraken-v2.yaml)      |
 
 ## REST API
 #### Public Market Data
@@ -148,12 +162,12 @@ Add the following dependencies in your pom.xml file. You will need at least xcha
 <dependency>
   <groupId>org.knowm.xchange</groupId>
   <artifactId>xchange-core</artifactId>
-  <version>5.0.13</version>
+  <version>5.2.3</version>
 </dependency>
 <dependency>
   <groupId>org.knowm.xchange</groupId>
   <artifactId>xchange-XYZ</artifactId>
-  <version>5.0.13</version>
+  <version>5.2.3</version>
 </dependency>
 ```
 
@@ -163,7 +177,7 @@ If it is available for your exchange, you may also want to use the streaming API
 <dependency>
   <groupId>org.knowm.xchange</groupId>
   <artifactId>xchange-stream-XYZ</artifactId>
-  <version>5.0.13</version>
+  <version>5.2.3</version>
 </dependency>
 ```
 
@@ -171,28 +185,35 @@ For snapshots, add the following repository to your pom.xml file.
 
 ```xml
 <repository>
-  <id>sonatype-oss-snapshot</id>
-  <snapshots/>
-  <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    <name>Central Portal Snapshots</name>
+    <id>central-portal-snapshots</id>
+    <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+    <releases>
+        <enabled>false</enabled>
+    </releases>
+    <snapshots>
+        <enabled>true</enabled>
+    </snapshots>
 </repository>
 ```
 
 The current snapshot version is:
 
-    5.0.14-SNAPSHOT
+    5.2.4-SNAPSHOT
 
 ## Building with Maven
 
 Instruction                 | Command
 --------------------------------- | ------------------------ 
-run unit tests                    | <kbd>mvn clean test</kbd>
-run unit and integration tests    | <kbd>mvn clean verify -DskipIntegrationTests=false</kbd>     
-install in local Maven repo       | <kbd>mvn clean install</kbd>
-create project javadocs           | <kbd>mvn javadoc:aggregate</kbd>
-generate dependency tree          | <kbd>mvn dependency:tree</kbd>
-check for dependency updates      | <kbd>mvn versions:display-dependency-updates</kbd>
-check for plugin updates          | <kbd>mvn versions:display-plugin-updates</kbd>
-code format                       | <kbd>mvn com.coveo:fmt-maven-plugin:format</kbd>
+run unit tests                    | `mvn clean test`
+run unit and integration tests    | `mvn clean verify -DskipIntegrationTests=false`    
+install in local Maven repo       | `mvn clean install`
+create project javadocs           | `mvn javadoc:aggregate`
+generate dependency tree          | `mvn dependency:tree`
+check for dependency updates      | `mvn versions:display-dependency-updates`
+check for plugin updates          | `mvn versions:display-plugin-updates`
+code format                       | `mvn com.spotify.fmt:fmt-maven-plugin:format`
+pom format/organize               | `mvn com.github.ekryd.sortpom:sortpom-maven-plugin:sort`
 
 ## Bugs
 

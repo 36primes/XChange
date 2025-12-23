@@ -20,6 +20,7 @@ import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.dto.account.Balance;
 import org.knowm.xchange.dto.account.FundingRecord;
+import org.knowm.xchange.dto.account.FundingRecord.Status;
 import org.knowm.xchange.dto.account.Wallet;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Ticker;
@@ -27,12 +28,13 @@ import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.marketdata.Trades.TradeSortType;
 import org.knowm.xchange.dto.meta.CurrencyMetaData;
-import org.knowm.xchange.dto.meta.CurrencyPairMetaData;
 import org.knowm.xchange.dto.meta.ExchangeMetaData;
+import org.knowm.xchange.dto.meta.InstrumentMetaData;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.MarketOrder;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.exceptions.ExchangeException;
+import org.knowm.xchange.instrument.Instrument;
 import org.knowm.xchange.livecoin.dto.account.LivecoinBalance;
 import org.knowm.xchange.livecoin.dto.marketdata.LivecoinAllOrderBooks;
 import org.knowm.xchange.livecoin.dto.marketdata.LivecoinOrder;
@@ -94,35 +96,25 @@ public class LivecoinAdapters {
     return converted;
   }
 
-  public static ExchangeMetaData adaptToExchangeMetaData(
-      ExchangeMetaData exchangeMetaData, List<LivecoinRestriction> products) {
+  public static ExchangeMetaData adaptToExchangeMetaData(List<LivecoinRestriction> products) {
 
-    Map<CurrencyPair, CurrencyPairMetaData> currencyPairs = exchangeMetaData.getCurrencyPairs();
-    Map<Currency, CurrencyMetaData> currencies = exchangeMetaData.getCurrencies();
+    Map<Instrument, InstrumentMetaData> currencyPairs = new HashMap<>();
+    Map<Currency, CurrencyMetaData> currencies = new HashMap<>();
     for (LivecoinRestriction product : products) {
       CurrencyPair pair = adaptCurrencyPair(product);
-      CurrencyPairMetaData staticMetaData = exchangeMetaData.getCurrencyPairs().get(pair);
-      CurrencyPairMetaData.Builder builder;
-      if (staticMetaData == null) {
-        builder = new CurrencyPairMetaData.Builder();
-      } else {
-        builder = CurrencyPairMetaData.Builder.from(staticMetaData);
-      }
-      if (product.getPriceScale() != null) {
-        builder.priceScale(product.getPriceScale());
-      } else if (staticMetaData != null && staticMetaData.getPriceScale() == null) {
-        builder.priceScale(FALLBACK_PRICE_SCALE);
-      }
-      if (!(staticMetaData != null && staticMetaData.getBaseScale() != null)) {
-        builder.baseScale(LIVECOIN_BASE_SCALE);
-      }
-      if (product.getMinLimitQuantity() != null) {
-        builder.minimumAmount(product.getMinLimitQuantity());
-      }
-      currencyPairs.put(pair, builder.build());
+      currencyPairs.put(
+          pair,
+          InstrumentMetaData.builder()
+              .priceScale(
+                  (product.getPriceScale() == null)
+                      ? FALLBACK_PRICE_SCALE
+                      : product.getPriceScale())
+              .volumeScale(LIVECOIN_BASE_SCALE)
+              .minimumAmount(product.getMinLimitQuantity())
+              .build());
 
-      if (!currencies.containsKey(pair.base)) currencies.put(pair.base, null);
-      if (!currencies.containsKey(pair.counter)) currencies.put(pair.counter, null);
+      if (!currencies.containsKey(pair.getBase())) currencies.put(pair.getBase(), null);
+      if (!currencies.containsKey(pair.getCounter())) currencies.put(pair.getCounter(), null);
     }
     return new ExchangeMetaData(currencyPairs, currencies, null, null, true);
   }
@@ -137,10 +129,10 @@ public class LivecoinAdapters {
     for (LivecoinTrade trade : tradesRaw) {
       OrderType type = trade.getType().equals("SELL") ? OrderType.BID : OrderType.ASK;
       Trade t =
-          new Trade.Builder()
+          Trade.builder()
               .type(type)
               .originalAmount(trade.getQuantity())
-              .currencyPair(currencyPair)
+              .instrument(currencyPair)
               .price(trade.getPrice())
               .timestamp(parseDate(trade.getTime()))
               .id(String.valueOf(trade.getId()))
@@ -245,10 +237,10 @@ public class LivecoinAdapters {
 
     String id = map.get("id").toString();
 
-    return new UserTrade.Builder()
+    return UserTrade.builder()
         .type(type)
         .originalAmount(amountA)
-        .currencyPair(new CurrencyPair(ccyA, ccyB))
+        .instrument(new CurrencyPair(ccyA, ccyB))
         .price(price)
         .timestamp(DateUtils.fromMillisUtc(Long.parseLong(map.get("date").toString())))
         .id(id)
@@ -262,18 +254,16 @@ public class LivecoinAdapters {
     FundingRecord.Type type = FundingRecord.Type.WITHDRAWAL;
     if (map.get("type").toString().equals("DEPOSIT")) type = FundingRecord.Type.DEPOSIT;
 
-    return new FundingRecord(
-        Optional.ofNullable(map.get("externalKey")).map(Object::toString).orElse(null),
-        DateUtils.fromMillisUtc(Long.parseLong(map.get("date").toString())),
-        getInstance(map.get("fixedCurrency").toString()),
-        new BigDecimal(map.get("amount").toString()),
-        map.get("id").toString(),
-        null,
-        type,
-        FundingRecord.Status.COMPLETE,
-        null,
-        new BigDecimal(map.get("fee").toString()),
-        null);
+    return FundingRecord.builder()
+        .address(Optional.ofNullable(map.get("externalKey")).map(Object::toString).orElse(null))
+        .date(DateUtils.fromMillisUtc(Long.parseLong(map.get("date").toString())))
+        .currency(getInstance(map.get("fixedCurrency").toString()))
+        .amount(new BigDecimal(map.get("amount").toString()))
+        .internalId(map.get("id").toString())
+        .type(type)
+        .status(Status.COMPLETE)
+        .fee(new BigDecimal(map.get("fee").toString()))
+        .build();
   }
 
   public static Wallet adaptWallet(List<LivecoinBalance> livecoinBalances) {

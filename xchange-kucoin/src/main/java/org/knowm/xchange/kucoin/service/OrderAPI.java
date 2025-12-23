@@ -1,17 +1,17 @@
 /** Copyright 2019 Mek Global Limited. */
 package org.knowm.xchange.kucoin.service;
 
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
 import org.knowm.xchange.kucoin.dto.request.OrderCreateApiRequest;
 import org.knowm.xchange.kucoin.dto.response.KucoinResponse;
 import org.knowm.xchange.kucoin.dto.response.OrderCancelResponse;
@@ -22,7 +22,7 @@ import si.mazi.rescu.ParamsDigest;
 import si.mazi.rescu.SynchronizedValueFactory;
 
 /** Based on code by chenshiwei on 2019/1/10. */
-@Path("/api/v1/orders")
+@Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public interface OrderAPI {
 
@@ -41,8 +41,26 @@ public interface OrderAPI {
    * @return A response containing the order id.
    */
   @POST
+  @Path("/hf/orders")
   @Consumes(MediaType.APPLICATION_JSON)
   KucoinResponse<OrderCreateResponse> createOrder(
+      @HeaderParam(APIConstants.API_HEADER_KEY) String apiKey,
+      @HeaderParam(APIConstants.API_HEADER_SIGN) ParamsDigest signature,
+      @HeaderParam(APIConstants.API_HEADER_TIMESTAMP) SynchronizedValueFactory<Long> nonce,
+      @HeaderParam(APIConstants.API_HEADER_PASSPHRASE) String apiPassphrase,
+      OrderCreateApiRequest opsRequest)
+      throws IOException;
+
+  /**
+   * Place a new stop-order.
+   *
+   * @param opsRequest Stop-Order creation request.
+   * @return A response containing the order id.
+   */
+  @POST
+  @Path("/stop-order")
+  @Consumes(MediaType.APPLICATION_JSON)
+  KucoinResponse<OrderCreateResponse> createStopOrder(
       @HeaderParam(APIConstants.API_HEADER_KEY) String apiKey,
       @HeaderParam(APIConstants.API_HEADER_SIGN) ParamsDigest signature,
       @HeaderParam(APIConstants.API_HEADER_TIMESTAMP) SynchronizedValueFactory<Long> nonce,
@@ -59,7 +77,7 @@ public interface OrderAPI {
    * @return A response containing the id of the cancelled order.
    */
   @DELETE
-  @Path("/{orderId}")
+  @Path("/orders/{orderId}")
   KucoinResponse<OrderCancelResponse> cancelOrder(
       @HeaderParam(APIConstants.API_HEADER_KEY) String apiKey,
       @HeaderParam(APIConstants.API_HEADER_SIGN) ParamsDigest signature,
@@ -75,6 +93,7 @@ public interface OrderAPI {
    * @return A response containing the ids of all open orders.
    */
   @DELETE
+  @Path("/orders")
   KucoinResponse<OrderCancelResponse> cancelOrders(
       @HeaderParam(APIConstants.API_HEADER_KEY) String apiKey,
       @HeaderParam(APIConstants.API_HEADER_SIGN) ParamsDigest signature,
@@ -90,7 +109,7 @@ public interface OrderAPI {
    * @return The requested order.
    */
   @GET
-  @Path("/{orderId}")
+  @Path("/orders/{orderId}")
   KucoinResponse<OrderResponse> getOrder(
       @HeaderParam(APIConstants.API_HEADER_KEY) String apiKey,
       @HeaderParam(APIConstants.API_HEADER_SIGN) ParamsDigest signature,
@@ -116,6 +135,7 @@ public interface OrderAPI {
    * @return A page of orders.
    */
   @GET
+  @Path("/orders")
   KucoinResponse<Pagination<OrderResponse>> queryOrders(
       @HeaderParam(APIConstants.API_HEADER_KEY) String apiKey,
       @HeaderParam(APIConstants.API_HEADER_SIGN) ParamsDigest signature,

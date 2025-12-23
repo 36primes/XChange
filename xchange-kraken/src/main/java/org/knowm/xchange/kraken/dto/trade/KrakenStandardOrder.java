@@ -24,6 +24,8 @@ public class KrakenStandardOrder {
   private final String userRefId;
   private final boolean validateOnly;
   private final Map<String, String> closeOrder;
+  private final TimeInForce timeInForce;
+  private final String clientOrderId;
 
   private KrakenStandardOrder(
       CurrencyPair currencyPair,
@@ -39,7 +41,9 @@ public class KrakenStandardOrder {
       String expireTime,
       String userRefId,
       boolean validateOnly,
-      Map<String, String> closeOrder) {
+      Map<String, String> closeOrder,
+      TimeInForce timeInForce,
+      String clientOrderId) {
 
     this.currencyPair = currencyPair;
     this.type = type;
@@ -55,6 +59,8 @@ public class KrakenStandardOrder {
     this.userRefId = userRefId;
     this.validateOnly = validateOnly;
     this.closeOrder = closeOrder;
+    this.timeInForce = timeInForce;
+    this.clientOrderId = clientOrderId;
   }
 
   public static KrakenOrderBuilder getMarketOrderBuilder(
@@ -232,6 +238,10 @@ public class KrakenStandardOrder {
     return userRefId;
   }
 
+  public String getClientOrderId() {
+    return clientOrderId;
+  }
+
   public boolean isValidateOnly() {
 
     return validateOnly;
@@ -240,6 +250,11 @@ public class KrakenStandardOrder {
   public Map<String, String> getCloseOrder() {
 
     return closeOrder;
+  }
+
+  public TimeInForce getTimeInForce() {
+
+    return timeInForce;
   }
 
   @Override
@@ -269,10 +284,14 @@ public class KrakenStandardOrder {
         + expireTime
         + ", userRefId="
         + userRefId
+        + ", clientOrderId="
+        + clientOrderId
         + ", validateOnly="
         + validateOnly
         + ", closeOrder="
         + closeOrder
+        + ", timeInForce="
+        + timeInForce
         + "]";
   }
 
@@ -290,8 +309,10 @@ public class KrakenStandardOrder {
     private String startTime;
     private String expireTime;
     private String userRefId;
+    private String clientOrderId;
     private boolean validateOnly;
     private Map<String, String> closeOrder;
+    private TimeInForce timeInForce;
 
     private KrakenOrderBuilder(
         CurrencyPair currencyPair, KrakenType type, KrakenOrderType orderType, BigDecimal volume) {
@@ -301,7 +322,7 @@ public class KrakenStandardOrder {
       this.orderType = orderType;
       this.volume = volume;
       this.orderFlags = new HashSet<>();
-      this.startTime = "0";
+      this.startTime = null;
       this.positionTxId = "0";
       this.validateOnly = false;
     }
@@ -358,6 +379,12 @@ public class KrakenStandardOrder {
       return this;
     }
 
+    public KrakenOrderBuilder withClientOrderId(String clientOrderId) {
+
+      this.clientOrderId = clientOrderId;
+      return this;
+    }
+
     public KrakenOrderBuilder withValidateOnly(boolean validateOnly) {
 
       this.validateOnly = validateOnly;
@@ -371,6 +398,11 @@ public class KrakenStandardOrder {
       closeOrder.put("ordertype", orderType.toString());
       closeOrder.put("price", price);
       closeOrder.put("price2", secondaryPrice);
+      return this;
+    }
+
+    public KrakenOrderBuilder withTimeInForce(TimeInForce timeInForce) {
+      this.timeInForce = timeInForce;
       return this;
     }
 
@@ -390,7 +422,9 @@ public class KrakenStandardOrder {
           expireTime,
           userRefId,
           validateOnly,
-          closeOrder == null ? new HashMap<>() : closeOrder);
+          closeOrder == null ? new HashMap<>() : closeOrder,
+          timeInForce,
+          clientOrderId);
     }
 
     @Override
@@ -424,6 +458,8 @@ public class KrakenStandardOrder {
           + validateOnly
           + ", closeOrder="
           + closeOrder
+          + ", timeInForce="
+          + timeInForce
           + "]";
     }
 
@@ -495,6 +531,11 @@ public class KrakenStandardOrder {
     public Map<String, String> getCloseOrder() {
 
       return closeOrder;
+    }
+
+    public TimeInForce getTimeInForce() {
+
+      return timeInForce;
     }
   }
 }

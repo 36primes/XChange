@@ -4,7 +4,9 @@ import java.util.Date;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.marketdata.Trade;
 
-/** @author Nikita Belenkiy on 04/11/2019. */
+/**
+ * @author Nikita Belenkiy on 04/11/2019.
+ */
 public class PoloniexWebSocketAdapter {
   private PoloniexWebSocketAdapter() {}
 
@@ -13,11 +15,11 @@ public class PoloniexWebSocketAdapter {
     TradeEvent tradeEvent = poloniexTradeEvent.getTradeEvent();
     Date timestamp = new Date(tradeEvent.getTimestampSeconds() * 1000L);
     Trade trade =
-        new Trade.Builder()
+        Trade.builder()
             .type(tradeEvent.getType())
             .price(tradeEvent.getPrice())
             .originalAmount(tradeEvent.getSize())
-            .currencyPair(currencyPair)
+            .instrument(currencyPair)
             .id(tradeEvent.getTradeId())
             .timestamp(timestamp)
             .build();

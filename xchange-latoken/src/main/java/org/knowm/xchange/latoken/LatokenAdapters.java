@@ -16,7 +16,7 @@ import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.marketdata.Trades.TradeSortType;
-import org.knowm.xchange.dto.meta.CurrencyPairMetaData;
+import org.knowm.xchange.dto.meta.InstrumentMetaData;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.OpenOrders;
 import org.knowm.xchange.dto.trade.UserTrade;
@@ -47,14 +47,18 @@ public class LatokenAdapters {
     return new CurrencyPair(base, counter);
   }
 
-  public static CurrencyPairMetaData adaptPairMetaData(LatokenPair latokenPair) {
+  public static InstrumentMetaData adaptPairMetaData(LatokenPair latokenPair) {
     BigDecimal tradingFee = latokenPair.getTakerFee();
     BigDecimal minAmount =
         latokenPair
             .getMinOrderAmount()
             .setScale(latokenPair.getAmountPrecision(), RoundingMode.HALF_DOWN);
     int priceScale = latokenPair.getPricePrecision();
-    return new CurrencyPairMetaData(tradingFee, minAmount, null, priceScale, null);
+    return InstrumentMetaData.builder()
+        .tradingFee(tradingFee)
+        .minimumAmount(minAmount)
+        .priceScale(priceScale)
+        .build();
   }
 
   public static CurrencyPair adaptCurrencyPair(Exchange exchange, String latokenSymbol) {
@@ -126,9 +130,9 @@ public class LatokenAdapters {
   }
 
   public static Trade adaptTrade(LatokenTrade latokenTrade, CurrencyPair pair) {
-    return new Trade.Builder()
+    return Trade.builder()
         .type(adaptOrderType(latokenTrade.getSide()))
-        .currencyPair(pair)
+        .instrument(pair)
         .originalAmount(latokenTrade.getAmount())
         .price(latokenTrade.getPrice())
         .timestamp(latokenTrade.getTimestamp())
@@ -200,23 +204,23 @@ public class LatokenAdapters {
   }
 
   public static UserTrade adaptUserTrade(LatokenUserTrade latokenUserTrade, CurrencyPair pair) {
-    return new UserTrade.Builder()
+    return UserTrade.builder()
         .type(adaptOrderType(latokenUserTrade.getSide()))
         .originalAmount(latokenUserTrade.getAmount())
-        .currencyPair(pair)
+        .instrument(pair)
         .price(latokenUserTrade.getPrice())
         .timestamp(latokenUserTrade.getTime())
         .id(latokenUserTrade.getId())
         .orderId(latokenUserTrade.getOrderId())
         .feeAmount(latokenUserTrade.getFee())
-        .feeCurrency(pair.counter) // Fee is always in counter currency
+        .feeCurrency(pair.getCounter()) // Fee is always in counter currency
         .build();
   }
 
   // --------------- Convert to Latoken convention --------------------------
 
   public static String toSymbol(CurrencyPair pair) {
-    return pair.base.getCurrencyCode() + pair.counter.getCurrencyCode();
+    return pair.getBase().getCurrencyCode() + pair.getCounter().getCurrencyCode();
   }
 
   public static String toSymbol(Currency currency) {

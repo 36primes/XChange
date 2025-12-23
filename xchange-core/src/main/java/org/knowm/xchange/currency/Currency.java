@@ -277,6 +277,7 @@ public class Currency implements Comparable<Currency>, Serializable {
   public static final Currency ZMK = getInstance("ZMK"); // Until 31.12.2012, afterwards ZMW used
   public static final Currency ZRC = createCurrency("ZRC", "ziftrCOIN", null);
   public static final Currency ZWL = createCurrency("ZWL", "Zimbabwean Dollar", null);
+  public static final Currency FCT = createCurrency("FCT", "Factom", null);
 
   // Bitmex futures settlement dates
   public static final Currency H18 = createCurrency("H18", "March 30th", null);
@@ -471,6 +472,7 @@ public class Currency implements Comparable<Currency>, Serializable {
   public static final Currency SOLVE = createCurrency("SOLVE", "SOLVE", null);
   public static final Currency OKB = createCurrency("OKB", "OKB", null);
   public static final Currency ZRX = createCurrency("ZRX", "0x", null);
+  public static final Currency FDUSD = createCurrency("FDUSD", "First Digital USD", null);
 
   private final String code;
 
